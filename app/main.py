@@ -64,6 +64,8 @@ async def play_music(msg: Message, music_name: str=""):
                 await msg.channel.send(f"正在为您播放 {name}-{vocalist}, 请稍等")
                 await stop_container()
                 await create_container(token=TOKEN, channel=CHANNEL, source=source, repeat="true")
+            else:
+                await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
     except Exception as e:
         if DEBUG:
             await msg.channel.send(traceback.format_exc())
