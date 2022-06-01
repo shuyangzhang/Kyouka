@@ -1,0 +1,26 @@
+## python binary files
+*.pyc
+__pycache__/
+
+## editor config files
+.vscode/
+
+## virtualenv files
+devenv/
+
+## log files
+logs/
+
+## env file
+.env
+.docker-env
+.python-version
+
+## static files
+static/
+
+## test cache and coverage file
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
