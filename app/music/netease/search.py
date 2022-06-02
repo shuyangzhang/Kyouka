@@ -37,14 +37,16 @@ async def fetch_music_source_by_name(music_name: str):
                         vocalist = artists[0].get("name", "未知歌手")
                     music_id = data[0].get("id")
                     source = f"{NETEASE_SOURCE_URL}?id={music_id}.mp3"
+                    duration = data[0].get("duration", 180000)
                 else:
                     matched = False
                     name = ""
                     vocalist = ""
                     source = ""
+                    duration = 0
 
-    print(matched, name, vocalist, source)
-    return matched, name, vocalist, source
+    print(matched, name, vocalist, source, duration)
+    return matched, name, vocalist, source, duration
 
 
 if __name__ == "__main__":
