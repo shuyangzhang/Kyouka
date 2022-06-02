@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from app.music.netease.search import fetch_music_source_by_name
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 load_dotenv()
 
@@ -54,8 +54,9 @@ async def update_voice_channel(msg: Message, channel_id: str=""):
             await msg.channel.send(str(e))
 
 @bot.command(name="play", aliases=["点歌", "播放"])
-async def play_music(msg: Message, music_name: str=""):
+async def play_music(msg: Message, *args):
     try:
+        music_name = "".join(args)
         if not music_name:
             raise Exception("输入格式有误。\n正确格式为: /play {music_name} 或 /点歌 {music_name}")
         else:
