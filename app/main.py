@@ -133,6 +133,37 @@ async def cut_music(msg: Message):
         else:
             await msg.channel.send(str(e))
 
+@bot.command(name="remove", aliases=["rm", "删除", "删"])
+async def remove_music_in_play_list(msg: Message, music_number: int=0):
+    global PLAYQUEUE
+
+    try:
+        if not music_number:
+            raise Exception("格式输入有误。\n正确格式为: /remove {list_number} 或 /删除 {list_number}")
+        else:
+            play_list_length = len(PLAYQUEUE)
+            if not play_list_length:
+                raise Exception("播放列表中没有任何歌曲哦")
+            else:
+                if music_number == 1:
+                    raise Exception("不能删除正在播放的音乐, 请使用 /cut 直接切歌")
+                elif music_number > play_list_length:
+                    raise Exception(f"列表中一共只有 {play_list_length} 首歌, 你不能删除第 {music_number} 首歌")
+                elif music_number <= 0:
+                    raise Exception(f"输入不合法, 请不要输入0或者负数")
+                else:
+                    play_list = list(PLAYQUEUE)
+                    removed_music = play_list[music_number - 1]
+                    del PLAYQUEUE[music_number - 1]
+                    await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
+
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
+
+
 @bot.command(name="pause", aliases=["暂停"])
 async def pause(msg: Message):
     try:
