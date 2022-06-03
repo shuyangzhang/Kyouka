@@ -3,9 +3,12 @@ import traceback
 import collections
 
 from khl import Message, Bot
+from khl.channel import ChannelTypes
 from dotenv import load_dotenv
 from app.music.netease.search import fetch_music_source_by_name
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
+from app.utils.channel_utils import get_joined_voice_channel_id
+
 
 __version__ = "0.2.0"
 
@@ -58,6 +61,28 @@ async def update_voice_channel(msg: Message, channel_id: str=""):
             await msg.channel.send(traceback.format_exc())
         else:
             await msg.channel.send(str(e))
+
+@bot.command(name="comehere", aliases=["来", "来我频道", "come"])
+async def come_to_my_voice_channel(msg: Message):
+    try:
+        guild_id = msg.ctx.guild.id
+        author_id = msg.author.id
+
+        author_voice_channel_id = await get_joined_voice_channel_id(bot=bot, guild_id=guild_id, user_id=author_id)
+        
+        if author_voice_channel_id:
+            await msg.channel.send(f"你当前所处的语音频道id为: {author_voice_channel_id}")
+        else:
+            raise Exception(f"请先进入一个语音频道后, 再使用这个命令")
+
+        await bot.command.get("channel").handler(msg, author_voice_channel_id)
+
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
+
 
 @bot.command(name="play", aliases=["点歌"])
 async def play_music(msg: Message, *args):
@@ -238,9 +263,9 @@ async def update_played_time_and_change_music():
     global PLAYED
     global PLAYQUEUE
     global LOCK
-    print("PLAYED = ", PLAYED)
-    print("Q = ", PLAYQUEUE)
-    print("LOCK = ", LOCK)
+    # print("PLAYED = ", PLAYED)
+    # print("Q = ", PLAYQUEUE)
+    # print("LOCK = ", LOCK)
 
     if LOCK:
         return None
