@@ -24,8 +24,58 @@ PLAYED = 0  # ms
 PLAYQUEUE = collections.deque()
 LOCK = False
 
+######################
+## re command support
+
+# 正则处理时是否开启前缀
+RE_PREFIX_ENABLE = True
+
+# 正则前缀是否必须位于 最开始
+RE_PREFIX_INBEGINN = True
+
+# 正则处理时的命令前缀
+RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"[kK][yY][Oo][Uu][Kk][Aa].*?" if RE_PREFIX_ENABLE else r"")
+
+######################
 
 bot = Bot(token=TOKEN)
+
+
+######################
+## 正则的语义交流转换
+@bot.command(name="RE_play_music",regex= RE_PREFIX + r'(?:来首|点歌|播放)[ ]?(.*)')
+async def regular_play_music(msg:Message, music_name:str):
+    """
+    点歌，加入列表
+    :param music_name: 歌曲名，通过正则获取
+    :other: 此处唤醒示例为: Kyouka来首STAY / kyouka 播放 STAY / kyouka 我要点歌 STAY / ... 
+    """
+    await bot.command.get("play").handler(msg, music_name)
+    
+# 列表 这里有更好的唤醒方法可以再提
+@bot.command(name="RE_list_music",regex= RE_PREFIX + r'(?:列表|播放列表|队列).*?')
+async def regular_list_music(msg:Message):
+    """
+    print music list
+    """
+    await bot.command.get("list").handler(msg)
+    
+# 来我房间
+@bot.command(name="RE_come_here",regex= RE_PREFIX + r'来我(?:房间|频道|语音).*?')
+async def regular_come_here(msg:Message):
+    pass
+    #                       这里改成哪个进入用户频道的
+    #await bot.command.get("channel").handler(msg)
+
+# 下一首歌
+@bot.command(name="RE_cut_music",regex= RE_PREFIX + r'(?:切歌|换歌|下一首|切).*?')
+async def regular_cut_music(msg:Message):
+    """
+    next music(regular)
+    """
+    await bot.command.get("cut_music").handler(msg)
+
+#########################
 
 @bot.command(name="ping")
 async def ping(msg: Message):
