@@ -34,7 +34,7 @@ RE_PREFIX_ENABLE = True
 RE_PREFIX_INBEGINN = True
 
 # 正则处理时的命令前缀
-RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"[kK][yY][Oo][Uu][Kk][Aa].*?" if RE_PREFIX_ENABLE else r"")
+RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"(?:[kK][yY][Oo][Uu][Kk][Aa]|[kK]{2}).*?" if RE_PREFIX_ENABLE else r"")
 
 ######################
 
@@ -43,7 +43,7 @@ bot = Bot(token=TOKEN)
 
 ######################
 ## 正则的语义交流转换
-@bot.command(name="RE_play_music",regex= RE_PREFIX + r'(?:来首|点歌|播放)[ ]?(.*)')
+@bot.command(name="RE_play_music",regex= RE_PREFIX + r'(?:来首|点歌|来一首|点首|点一首)[ ]?(.*)')
 async def regular_play_music(msg:Message, music_name:str):
     """
     点歌，加入列表
@@ -63,9 +63,7 @@ async def regular_list_music(msg:Message):
 # 来我房间
 @bot.command(name="RE_come_here",regex= RE_PREFIX + r'来我(?:房间|频道|语音).*?')
 async def regular_come_here(msg:Message):
-    pass
-    #                       这里改成哪个进入用户频道的
-    #await bot.command.get("channel").handler(msg)
+    await bot.command.get("comehere").handler(msg)
 
 # 下一首歌
 @bot.command(name="RE_cut_music",regex= RE_PREFIX + r'(?:切歌|换歌|下一首|切).*?')
@@ -73,7 +71,7 @@ async def regular_cut_music(msg:Message):
     """
     next music(regular)
     """
-    await bot.command.get("cut_music").handler(msg)
+    await bot.command.get("cut").handler(msg)
 
 #########################
 
