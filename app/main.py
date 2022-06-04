@@ -11,6 +11,9 @@ from app.music.bilibili.search import bvid_to_music_by_bproxy, BPROXY_API
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 
+import CardStorage as CS
+from khl.card import CardMessage
+
 
 __version__ = "0.3.0"
 
@@ -45,6 +48,19 @@ RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"(?:[kK][yY][Oo][Uu][Kk][Aa]
 ######################
 
 bot = Bot(token=TOKEN)
+
+
+################## music
+from khl import Event,EventTypes
+@bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
+async def msg_btn_click(b:Bot,event:Event):
+    channel = await b.fetch_public_channel(event.body['target_id'])
+    value = event.body['value']
+    action, *args = (value.split(":"))
+    await channel.send(f"action:{action} arg:{args}")
+    # use action to do something
+
+##################
 
 
 ######################
@@ -256,6 +272,9 @@ async def play_list(msg: Message):
         if not play_list:
             await msg.channel.send("当前的播放列表为空哦")
         else:
+            # card msg
+            await msg.reply(CardMessage(*CS.MusicListCard(music_list)))
+            
             resp = ""
             for index, this_music in enumerate(play_list):
                 resp += f"[{index + 1}] {this_music[0]} - {this_music[1]}"
