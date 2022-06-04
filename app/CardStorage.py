@@ -1,4 +1,5 @@
 
+
 def NowMusicCard(music_list:list) -> Card:
     # playing music card
     first_music = music_list[0]
@@ -6,17 +7,18 @@ def NowMusicCard(music_list:list) -> Card:
     playing_music_card.append(
         Module.Header(f":notes:  当前歌曲")
     )
+
     playing_music_card.append(
         Module.Section(
             Element.Text(
-                f"**    (1)    {first_music[__MusicListIndex.MUSIC_NAME.value]} - {first_music[__MusicListIndex.MUSIC_AUTHOR.value]}**",
+                f"**  {first_music[__MusicListIndex.MUSIC_NAME.value]}  -  {first_music[__MusicListIndex.MUSIC_AUTHOR.value]}**",
                 type=Types.Text.KMD
             ),
-            accessory=Element.Button(
-                text="切歌",
-                theme=Types.Theme.WARNING,
-                value='cut:'
-            )
+            accessory=Element.Image(
+                #src=first_music[__MusicListIndex.MUSIC_PIC_URL.value]
+                src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+            ),
+            mode=Types.SectionMode.LEFT
         )
     )
 
@@ -27,12 +29,23 @@ def NowMusicCard(music_list:list) -> Card:
     playing_music_card.append(
         Module.Countdown(
             end = end_time,
-            start = start_time,
-            mode = Types.CountdownMode.SECOND
+            mode = Types.CountdownMode.SECOND,
+            start=start_time,
         )
     )
-    return playing_music_card
 
+    # cut button
+    playing_music_card.append(
+        Module.ActionGroup(
+            Element.Button(
+                text = "               切歌               ",
+                value='cut:',
+                theme=Types.Theme.PRIMARY
+            )
+        )
+    )
+
+    return playing_music_card
 
 def MusicListCard(music_list:list) -> Tuple[Card,Card]:
     """
