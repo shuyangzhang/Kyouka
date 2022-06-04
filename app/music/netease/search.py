@@ -5,20 +5,8 @@ NETEASE_API = "http://cloud-music.pl-fe.cn/"
 NETEASE_SOURCE_URL = "http://music.163.com/song/media/outer/url"
 
 async def fetch_music_source_by_name(music_name: str):
-    # headers = {
-    #     "x-requested-with": "XMLHttpRequest"
-    # }
-    # form = aiohttp.FormData()
-    # form.add_field("input", music_name)
-    # form.add_field("filter", "name")
-    # form.add_field("type", "netease")
-    # form.add_field("page", 1)
     url = f"{NETEASE_API}search?keywords={music_name}&limit=1&offset=0&type=1"
     async with aiohttp.ClientSession() as session:
-        # async with session.post(QQWTT_SEARCH_API, headers=headers, data=form) as response:
-            # resp = await response.text()
-            # resp_json = json.loads(resp)
-
         async with session.get(url) as r:
             resp_json = await r.json()
             status = resp_json.get("code", 500)
