@@ -2,10 +2,12 @@ import os
 import traceback
 import collections
 import datetime
+import aiohttp
 
 from khl import Message, Bot
 from dotenv import load_dotenv
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
+from app.music.bilibili.search import bvid_to_music_by_bproxy, BPROXY_API
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 
@@ -154,6 +156,26 @@ async def play_music(msg: Message, *args):
                 PLAYQUEUE.append([name, vocalist, source, duration])
             else:
                 await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
+
+@bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
+async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
+    global PLAYQUEUE
+
+    try:
+        if not BVid:
+            raise Exception("输入格式有误。\n正确格式为: /bilibili {BVid} 或 /bv {BVid}")
+        else:
+            matched, name, author, source, duration = await bvid_to_music_by_bproxy(BVid=BVid)
+            if matched:
+                await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
+                PLAYQUEUE.append([name, author, source, duration])
+            else:
+                await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
     except Exception as e:
         if DEBUG:
             await msg.channel.send(traceback.format_exc())
@@ -460,3 +482,14 @@ async def clear_expired_candidates_cache():
             CANDIDATES_LOCK = False
             print("Exception = ", str(e))
 
+@bot.task.add_interval(minutes=1)
+async def keep_bproxy_alive():
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(BPROXY_API) as r:
+                resp_json = await r.json()
+                print(resp_json)
+                print("bproxy is alive now")
+    except Exception as e:
+        print("Exception = ", str(e))
+        print("bproxy is not alive now")
