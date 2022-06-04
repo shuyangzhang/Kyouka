@@ -17,7 +17,6 @@ load_dotenv()
 
 TOKEN= os.environ.get("TOKEN")
 CHANNEL = os.environ.get("CHANNEL")
-REPEAT = os.environ.get("REPEAT", "true")
 CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "Kyouka")
 RE_PREFIX_SWITCH = os.environ.get("RE_PREFIX_SWITCH", False)
 
