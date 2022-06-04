@@ -72,14 +72,14 @@ async def search_music_by_keyword(music_name: str, limit: int=5):
                             vocalist = artists[0].get("name", "未知歌手")
                         music_id = this_music.get("id")
                         source = f"{NETEASE_SOURCE_URL}?id={music_id}.mp3"
-                        duration = data[0].get("duration", 180000)
+                        duration = this_music.get("duration", 180000)
 
                         candidates.append([name, vocalist, source, duration])                        
                 else:
                     matched = False
                     candidates = []
 
-    print(matched, candidates)
+    print(candidates)
     return matched, candidates
 
 

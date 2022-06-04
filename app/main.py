@@ -3,7 +3,6 @@ import traceback
 import collections
 
 from khl import Message, Bot
-from khl.channel import ChannelTypes
 from dotenv import load_dotenv
 from app.music.netease.search import fetch_music_source_by_name
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
