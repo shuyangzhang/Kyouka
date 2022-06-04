@@ -5,14 +5,14 @@ import datetime
 import aiohttp
 
 from khl import Message, Bot
+from khl.card import CardMessage
 from dotenv import load_dotenv
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.bilibili.search import bvid_to_music_by_bproxy, BPROXY_API
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 
-import CardStorage as CS
-from khl.card import CardMessage
+import app.CardStorage as CS
 
 
 __version__ = "0.3.0"
@@ -169,7 +169,7 @@ async def play_music(msg: Message, *args):
             matched, name, vocalist, source, duration = await fetch_music_source_by_name(music_name)
             if matched:
                 await msg.channel.send(f"已将 {name}-{vocalist} 添加到播放列表")
-                PLAYQUEUE.append([name, vocalist, source, duration])
+                PLAYQUEUE.append([name, vocalist, source, duration, -1, ""])
             else:
                 await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
     except Exception as e:
@@ -189,7 +189,7 @@ async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
             matched, name, author, source, duration = await bvid_to_music_by_bproxy(BVid=BVid)
             if matched:
                 await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
-                PLAYQUEUE.append([name, author, source, duration])
+                PLAYQUEUE.append([name, author, source, duration, -1, ""])
             else:
                 await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
     except Exception as e:
@@ -255,6 +255,8 @@ async def select_candidate(msg: Message, candidate_num: int=0):
                     raise Exception(f"搜索列表只有 {length} 个结果哦, 你不能选择第 {candidate_num} 个结果")
                 else:
                     selected_music = candidates[candidate_num - 1]
+                    selected_music.append(-1)
+                    selected_music.append("")
                     CANDIDATES_MAP.pop(author_id, None)
                     PLAYQUEUE.append(selected_music)
                     await msg.channel.send(f"已将 {selected_music[0]}-{selected_music[1]} 添加到播放列表")
@@ -273,6 +275,7 @@ async def play_list(msg: Message):
             await msg.channel.send("当前的播放列表为空哦")
         else:
             # card msg
+            music_list = list(PLAYQUEUE)
             await msg.reply(CardMessage(*CS.MusicListCard(music_list)))
             
             resp = ""
@@ -312,6 +315,11 @@ async def cut_music(msg: Message):
                 next_music = list(PLAYQUEUE)[0]
                 await stop_container(CONTAINER_NAME)
                 await create_container(TOKEN, CHANNEL, next_music[2], "false", CONTAINER_NAME)
+
+                current_music = PLAYQUEUE.popleft()
+                current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
+                PLAYQUEUE.appendleft(current_music)
+
                 await msg.channel.send(f"正在为您播放 {next_music[0]} - {next_music[1]}")
                 PLAYED = 5000
     except Exception as e:
@@ -446,6 +454,11 @@ async def update_played_time_and_change_music():
                 if PLAYED == 0:
                     await stop_container(CONTAINER_NAME)
                     await create_container(TOKEN, CHANNEL, first_music[2], "false", CONTAINER_NAME)
+                    
+                    current_music = PLAYQUEUE.popleft()
+                    current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
+                    PLAYQUEUE.appendleft(current_music)
+
                     PLAYED += 5000
                     LOCK = False
                     return None
@@ -466,6 +479,11 @@ async def update_played_time_and_change_music():
                             next_music = list(PLAYQUEUE)[0]
                             await stop_container(CONTAINER_NAME)
                             await create_container(TOKEN, CHANNEL, next_music[2], "false", CONTAINER_NAME)
+
+                            current_music = PLAYQUEUE.popleft()
+                            current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
+                            PLAYQUEUE.appendleft(current_music)
+
                             PLAYED = 5000
                             LOCK = False
                             return None
