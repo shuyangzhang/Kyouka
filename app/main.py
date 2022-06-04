@@ -1,10 +1,12 @@
+from ast import alias
 import os
 import traceback
 import collections
+import datetime
 
 from khl import Message, Bot
 from dotenv import load_dotenv
-from app.music.netease.search import fetch_music_source_by_name
+from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 
@@ -22,6 +24,9 @@ DEBUG = False
 PLAYED = 0  # ms
 PLAYQUEUE = collections.deque()
 LOCK = False
+
+CANDIDATES_MAP = {}
+CANDIDATES_LOCK = False
 
 ######################
 ## re command support
@@ -152,6 +157,75 @@ async def play_music(msg: Message, *args):
             await msg.channel.send(traceback.format_exc())
         else:
             await msg.channel.send(str(e))
+
+@bot.command(name="search", aliases=["搜索", "搜"])
+async def search_music(msg: Message, keyword: str=""):
+    global CANDIDATES_MAP
+
+    try:
+        if not keyword:
+            raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
+        else:
+            matched, candidates = await search_music_by_keyword(music_name=keyword)
+            if matched:
+                # put candidates into global cache first
+                author_id = msg.author.id
+                expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+                candidates_body = {
+                    "candidates": candidates,
+                    "expire": expire,
+                }
+                CANDIDATES_MAP.pop(author_id, None)
+                CANDIDATES_MAP[author_id] = candidates_body
+
+                # then generate the select menu
+                select_menu_msg = "已匹配到如下结果：\n"
+                for index, this_item in enumerate(candidates):
+                    this_item_str = f"<{index + 1}> {this_item[0]} - {this_item[1]} \n"
+                    select_menu_msg += this_item_str
+                select_menu_msg += "\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)"
+                await msg.channel.send(select_menu_msg)
+
+            else:
+                await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
+
+@bot.command(name="select", aliases=["pick", "选择", "选"])
+async def select_candidate(msg: Message, candidate_num: int=0):
+    global CANDIDATES_MAP
+    global PLAYQUEUE
+
+    try:
+        if not candidate_num:
+            raise Exception("输入格式有误。\n正确格式为: /select {编号} 或 /选 {编号}")
+        else:
+            author_id = msg.author.id
+            if author_id not in CANDIDATES_MAP:
+                raise Exception("你还没有搜索哦, 或者是你的搜索结果已过期(1分钟)")
+            else:
+                candidates = CANDIDATES_MAP[author_id].get("candidates")
+                length = len(candidates)
+                if candidate_num <= 0:
+                    raise Exception("输入不合法, 请不要输入0或者负数")
+                elif candidate_num > length:
+                    raise Exception(f"搜索列表只有 {length} 个结果哦, 你不能选择第 {candidate_num} 个结果")
+                else:
+                    selected_music = candidates[candidate_num - 1]
+                    CANDIDATES_MAP.pop(author_id, None)
+                    PLAYQUEUE.append(selected_music)
+                    await msg.channel.send(f"已将 {selected_music[0]}-{selected_music[1]} 添加到播放列表")
+
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
+
+
 
 @bot.command(name="list", aliases=["列表", "播放列表", "队列"])
 async def play_list(msg: Message):
@@ -356,5 +430,32 @@ async def update_played_time_and_change_music():
             LOCK = False
             print("Exception = ", str(e))
 
+@bot.task.add_interval(seconds=10)
+async def clear_expired_candidates_cache():
+    global CANDIDATES_MAP
+    global CANDIDATES_LOCK
 
+    if CANDIDATES_LOCK:
+        return None
+    else:
+        CANDIDATES_LOCK = True
+        print(CANDIDATES_MAP)
+        try:
+            now = datetime.datetime.now()
+
+            need_to_clear = []
+            for this_user in CANDIDATES_MAP:
+                if now >= CANDIDATES_MAP.get(this_user, {}).get("expire", now):
+                    need_to_clear.append(this_user)
+            
+            for user_need_to_clear in need_to_clear:
+                CANDIDATES_MAP.pop(user_need_to_clear, None)
+                print(f"cache of user: {user_need_to_clear} is removed")
+            
+            CANDIDATES_LOCK = False
+            return None
+
+        except Exception as e:
+            CANDIDATES_LOCK = False
+            print("Exception = ", str(e))
 
