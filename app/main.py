@@ -9,6 +9,9 @@ from app.music.netease.search import fetch_music_source_by_name, search_music_by
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 
+import CardStorage as CS
+from khl.card import CardMessage
+
 
 __version__ = "0.3.0"
 
@@ -247,6 +250,9 @@ async def play_list(msg: Message):
         if not play_list:
             await msg.channel.send("当前的播放列表为空哦")
         else:
+            # card msg
+            await msg.reply(CardMessage(*CS.MusicListCard(music_list)))
+            
             resp = ""
             for index, this_music in enumerate(play_list):
                 resp += f"[{index + 1}] {this_music[0]} - {this_music[1]}"
