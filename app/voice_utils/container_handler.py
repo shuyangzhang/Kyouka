@@ -2,11 +2,10 @@ import docker
 
 
 IMAGE_NAME = "shuyangzhang/khl-voice"
-CONTAINER_NAME = "kyouka"
 
 CLIENT = docker.from_env()
 
-async def create_container(token: str, channel: str, source: str, repeat: str):
+async def create_container(token: str, channel: str, source: str, repeat: str, container_name: str):
     env_dict = {
         "TOKEN": token,
         "CHANNEL": channel,
@@ -20,27 +19,27 @@ async def create_container(token: str, channel: str, source: str, repeat: str):
         environment = env_dict,
         tty = True,
         detach = True,
-        name = CONTAINER_NAME
+        name = container_name
     )
 
-async def stop_container():
+async def stop_container(container_name: str):
     try:
-        container = CLIENT.containers.get(CONTAINER_NAME)
+        container = CLIENT.containers.get(container_name)
         container.stop()
     except docker.errors.NotFound:
-        print("kyouku is not running")
+        print(f"{container_name} is not running")
 
-async def pause_container():
+async def pause_container(container_name: str):
     try:
-        container = CLIENT.containers.get(CONTAINER_NAME)
+        container = CLIENT.containers.get(container_name)
         container.pause()
     except docker.errors.NotFound:
-        print("kyouku is not running")
+        print(f"{container_name} is not running")
 
-async def unpause_container():
+async def unpause_container(container_name: str):
     try:
-        container = CLIENT.containers.get(CONTAINER_NAME)
+        container = CLIENT.containers.get(container_name)
         container.unpause()
     except docker.errors.NotFound:
-        print("kyouku is not running")
+        print(f"{container_name} is not running")
 
