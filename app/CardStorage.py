@@ -50,7 +50,7 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
             accessory=Element.Button(
                 text="切歌",
                 theme=Types.Theme.WARNING,
-                value='help:'
+                value='cut:'
             )
         )
     )
