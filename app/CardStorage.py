@@ -7,8 +7,21 @@ from khl.card.element import Element
 from khl.card.struct import Struct
 from khl.card.color import Color
 
+###################### music
+
 from enum import Enum
 from typing import Tuple
+class __MusicListIndex(Enum):
+    MUSIC_NAME = 0
+    MUSIC_AUTHOR = 1
+    MUSIC_URL = 2
+    MUSIC_LENGTH = 3
+    MUSIC_ENDTIME = 4
+    MUSIC_PIC_URL = 5
+
+__MUSIC_LIST_TILE_COLOR = "#9b59b6"
+__MUSIC_LIST_PLAYING_MUSIC_COLOR = "#a29bfe"
+
 
 def NowMusicCard(music_list:list) -> Card:
     # playing music card
@@ -57,11 +70,12 @@ def NowMusicCard(music_list:list) -> Card:
 
     return playing_music_card
 
+
 def MusicListCard(music_list:list) -> Tuple[Card,Card]:
     """
     返回音乐列表card
     :param music_list:进入数据结构大致为，： music_list[5] = [
-    ['music_name1','music_author','music_url','music_length',1654354800000],
+    ['music_name1','music_author','music_url' , 500, 1654354800000],
     ['music_name2','music_author','music_url','music_length',-1],
     ['music_name3','music_author','music_url','music_length',-1],
     ...
