@@ -4,7 +4,7 @@ import aiohttp
 BILIBILI_VIDEO_INFO_API = "http://api.bilibili.com/x/web-interface/view"
 BILIBILI_AUDIO_SOURCE_API = "https://api.bilibili.com/x/player/playurl"
 
-BPROXY_API = "https://bproxy.shuyangzhang.repl.co/bproxy"
+BPROXY_API = "https://bproxy.shuyangzhang.repl.co/"
 
 
 async def fetch_basic_video_info_by_BVid(BVid: str):
@@ -69,7 +69,7 @@ async def bvid_to_music(BVid: str):
     return matched, name, author, source, duration
 
 async def bvid_to_music_by_bproxy(BVid: str):
-    url = f"{BPROXY_API}?bvid={BVid}"
+    url = f"{BPROXY_API}bproxy?bvid={BVid}"
     
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as r:
