@@ -10,7 +10,7 @@ from app.voice_utils.container_handler import create_container, stop_container, 
 from app.utils.channel_utils import get_joined_voice_channel_id
 
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 load_dotenv()
 
