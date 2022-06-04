@@ -21,10 +21,14 @@ def NowMusicCard(music_list:list) -> Card:
     )
 
     end_time_int = first_music[__MusicListIndex.MUSIC_ENDTIME.value]
+    start_time_int = end_time_int - first_music[__MusicListIndex.MUSIC_LENGTH.value]
+    end_time = datetime.datetime.fromtimestamp(end_time_int / 1e3) if end_time_int != -1 else datetime.datetime.now()
+    start_time = datetime.datetime.fromtimestamp(start_time_int / 1e3)
     playing_music_card.append(
         Module.Countdown(
-            end=datetime.datetime.fromtimestamp(end_time_int / 1e3) if end_time_int != -1 else datetime.datetime.now(),
-            mode=Types.CountdownMode.SECOND
+            end = end_time,
+            start = start_time,
+            mode = Types.CountdownMode.SECOND
         )
     )
     return playing_music_card
