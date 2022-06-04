@@ -45,6 +45,19 @@ RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"(?:[kK][yY][Oo][Uu][Kk][Aa]
 bot = Bot(token=TOKEN)
 
 
+################## music
+from khl import Event,EventTypes
+@bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
+async def msg_btn_click(b:Bot,event:Event):
+    channel = await b.fetch_public_channel(event.body['target_id'])
+    value = event.body['value']
+    action, *args = (value.split(":"))
+    await channel.send(f"action:{action} arg:{args}")
+    # use action to do something
+
+##################
+
+
 ######################
 ## 正则的语义交流转换
 @bot.command(name="RE_play_music",regex= RE_PREFIX + r'(?:来首|点歌|来一首|点首|点一首)[ ]?(.*)')
