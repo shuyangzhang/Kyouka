@@ -1,6 +1,4 @@
-import this
 import aiohttp
-import json
 
 
 NETEASE_API = "http://cloud-music.pl-fe.cn/"
