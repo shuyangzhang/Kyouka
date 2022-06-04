@@ -1,4 +1,14 @@
+import datetime
 
+from khl.card import Card
+from khl.card.module import Module
+from khl.card.interface import Types
+from khl.card.element import Element
+from khl.card.struct import Struct
+from khl.card.color import Color
+
+from enum import Enum
+from typing import Tuple
 
 def NowMusicCard(music_list:list) -> Card:
     # playing music card
