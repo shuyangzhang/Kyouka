@@ -19,6 +19,7 @@ TOKEN= os.environ.get("TOKEN")
 CHANNEL = os.environ.get("CHANNEL")
 REPEAT = os.environ.get("REPEAT", "true")
 CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "Kyouka")
+RE_PREFIX_SWITCH = os.environ.get("RE_PREFIX_SWITCH", False)
 
 DEBUG = False
 
@@ -55,7 +56,8 @@ async def regular_play_music(msg:Message, music_name:str):
     :param music_name: 歌曲名，通过正则获取
     :other: 此处唤醒示例为: Kyouka来首STAY / kyouka 播放 STAY / kyouka 我要点歌 STAY / ... 
     """
-    await bot.command.get("play").handler(msg, music_name)
+    if RE_PREFIX_SWITCH:
+        await bot.command.get("play").handler(msg, music_name)
     
 # 列表 这里有更好的唤醒方法可以再提
 @bot.command(name="RE_list_music",regex= RE_PREFIX + r'(?:列表|播放列表|队列).*?')
@@ -63,12 +65,14 @@ async def regular_list_music(msg:Message):
     """
     print music list
     """
-    await bot.command.get("list").handler(msg)
+    if RE_PREFIX_SWITCH:
+        await bot.command.get("list").handler(msg)
     
 # 来我房间
 @bot.command(name="RE_come_here",regex= RE_PREFIX + r'来我(?:房间|频道|语音).*?')
 async def regular_come_here(msg:Message):
-    await bot.command.get("comehere").handler(msg)
+    if RE_PREFIX_SWITCH:
+        await bot.command.get("comehere").handler(msg)
 
 # 下一首歌
 @bot.command(name="RE_cut_music",regex= RE_PREFIX + r'(?:切歌|换歌|下一首|切).*?')
@@ -76,7 +80,8 @@ async def regular_cut_music(msg:Message):
     """
     next music(regular)
     """
-    await bot.command.get("cut").handler(msg)
+    if RE_PREFIX_SWITCH:
+        await bot.command.get("cut").handler(msg)
 
 #########################
 
