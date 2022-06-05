@@ -85,14 +85,16 @@ async def bvid_to_music_by_bproxy(BVid: str):
                     author = data.get("author", "")
                     source = data.get("source")
                     duration = data.get("duration", 180000)
+                    cover_image_url = data.get("cover_image_url", "")
                 else:
                     matched = False
                     name = ""
                     author = ""
                     source = ""
                     duration = 0
-    print(matched, name, author, source, duration)
-    return matched, name, author, source, duration
+                    cover_image_url = ""
+    print(matched, name, author, source, duration, cover_image_url)
+    return matched, name, author, source, duration, cover_image_url
 
 if __name__ == "__main__":
     import asyncio

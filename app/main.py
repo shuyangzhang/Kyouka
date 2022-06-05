@@ -186,10 +186,10 @@ async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
         if not BVid:
             raise Exception("输入格式有误。\n正确格式为: /bilibili {BVid} 或 /bv {BVid}")
         else:
-            matched, name, author, source, duration = await bvid_to_music_by_bproxy(BVid=BVid)
+            matched, name, author, source, duration, cover_image_url = await bvid_to_music_by_bproxy(BVid=BVid)
             if matched:
                 await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
-                PLAYQUEUE.append([name, author, source, duration, -1, ""])
+                PLAYQUEUE.append([name, author, source, duration, -1, cover_image_url])
             else:
                 await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
     except Exception as e:
