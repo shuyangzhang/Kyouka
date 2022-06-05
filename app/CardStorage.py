@@ -30,7 +30,7 @@ def NowMusicCard(music_list:list) -> Card:
     playing_music_card.append(
         Module.Header(f":notes:  当前歌曲")
     )
-
+    image_url = first_music[__MusicListIndex.MUSIC_PIC_URL.value]
     playing_music_card.append(
         Module.Section(
             Element.Text(
@@ -38,8 +38,7 @@ def NowMusicCard(music_list:list) -> Card:
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                src = first_music[__MusicListIndex.MUSIC_PIC_URL.value]
-                #src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+                src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
             ),
             mode=Types.SectionMode.RIGHT
         )
@@ -89,6 +88,7 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
         Module.Header(f":star2:  剩余歌曲")
     )
     for index,one_music_des in enumerate( music_list[1:]):
+        image_url = one_music_des[__MusicListIndex.MUSIC_PIC_URL.value]
         remaining_list_card.append(
             Module.Section(
                 Element.Text(
@@ -96,8 +96,7 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
                     type=Types.Text.KMD
                 ),
                 accessory=Element.Image(
-                    src = one_music_des[__MusicListIndex.MUSIC_PIC_URL.value]
-                    #src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+                    src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
                 ),
                 mode=Types.SectionMode.LEFT
             )
