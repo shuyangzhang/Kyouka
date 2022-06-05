@@ -272,21 +272,28 @@ async def play_list(msg: Message):
         if not play_list:
             await msg.channel.send("当前的播放列表为空哦")
         else:
-            # card msg
-            music_list = list(PLAYQUEUE)
-            await msg.reply(CardMessage(*CS.MusicListCard(music_list)))
-            
-            resp = ""
-            for index, this_music in enumerate(play_list):
-                resp += f"[{index + 1}] {this_music[0]} - {this_music[1]}"
-                if index == 0:
-                    resp += " <-- 正在播放 -->\n"
-                else:
-                    resp += "\n"
-            await msg.channel.send(resp)
+            from khl.requester import HTTPRequester
+            # try card msg first, if it failed, then use cli msg
+            try:
+                await msg.reply(CardMessage(*CS.MusicListCard(play_list)))
+            except HTTPRequester.APIRequestFailed:
+                resp = ""
+                for index, this_music in enumerate(play_list):
+                    resp += f"[{index + 1}] {this_music[0]} - {this_music[1]}"
+                    if index == 0:
+                        resp += " <-- 正在播放 -->\n"
+                    else:
+                        resp += "\n"
+                await msg.channel.send(resp)
+            except Exception as e:
+                raise e
     except Exception as e:
         if DEBUG:
             await msg.channel.send(traceback.format_exc())
+            play_list = list(PLAYQUEUE)
+            import json
+            # play_list_str = json.dumps(play_list)
+            await msg.channel.send(f"[DEBUG] play list is {play_list}")
         else:
             await msg.channel.send(str(e))
     
