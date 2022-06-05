@@ -22,6 +22,7 @@ async def fetch_album_cover_image_url_by_music_id(music_id: int):
                     matched = True
                     song = data[0]
                     cover_image_url = song.get("album", {}).get("picUrl", "")
+                    cover_image_url = f"{cover_image_url}?param=130y130" if cover_image_url else cover_image_url
                 else:
                     matched = False
                     cover_image_url = ""
