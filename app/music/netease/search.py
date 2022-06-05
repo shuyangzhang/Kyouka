@@ -86,7 +86,7 @@ async def search_music_by_keyword(music_name: str, limit: int=5):
                         duration = this_music.get("duration", 180000)
                         _, cover_image_url = await fetch_album_cover_image_url_by_music_id(music_id=music_id)
 
-                        candidates.append([name, vocalist, source, duration, cover_image_url])                        
+                        candidates.append([name, vocalist, source, duration, -1, cover_image_url])                        
                 else:
                     matched = False
                     candidates = []
