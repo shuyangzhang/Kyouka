@@ -15,7 +15,7 @@ from app.utils.channel_utils import get_joined_voice_channel_id
 import app.CardStorage as CS
 
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 load_dotenv()
 
@@ -109,6 +109,16 @@ async def ping(msg: Message):
 async def version(msg: Message):
     await msg.channel.send(f"Version number: {__version__}")
 
+@bot.command(name="help", aliases=["帮助", "文档", "手册", "说明", "示例", "命令", "?", "？"])
+async def help(msg: Message):
+    try:
+        await msg.channel.send(CardMessage(CS.HelpCard()))
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
+
 @bot.command(name="debug")
 async def debug(msg: Message):
     if msg.author.id in ["693543263"]:
@@ -156,7 +166,6 @@ async def come_to_my_voice_channel(msg: Message):
             await msg.channel.send(traceback.format_exc())
         else:
             await msg.channel.send(str(e))
-
 
 @bot.command(name="play", aliases=["点歌"])
 async def play_music(msg: Message, *args):
