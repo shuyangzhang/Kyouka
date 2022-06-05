@@ -57,6 +57,7 @@ def NowMusicCard(music_list:list) -> Card:
     )
 
     # cut button
+    """
     playing_music_card.append(
         Module.ActionGroup(
             Element.Button(
@@ -66,6 +67,7 @@ def NowMusicCard(music_list:list) -> Card:
             )
         )
     )
+    """
 
     return playing_music_card
 
@@ -101,6 +103,7 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
                 mode=Types.SectionMode.LEFT
             )
         )
+        """
         remaining_list_card.append(
             Module.ActionGroup(
                 Element.Button(
@@ -115,6 +118,7 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
                 )
             )
         )
+        """
         remaining_list_card.append(Module.Divider())
 
     return NowMusicCard(music_list), remaining_list_card
@@ -123,32 +127,43 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":skull:  DAEK Commands"))
-    card.append(Module.Section(Element.Text("在所有命令前添加 `daek` 前缀！")))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.4.0 20220606 :watermelon:"))
+    card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
+
     # base command
     card.append(
         Module.Section(
             Element.Text(
 """
-:bone:  基础指令 :bone:
-`help` - 获取当前帮助文档
-`info` - 获取角色信息
+:headphones:  **绑定语音频道**  :headphones: (下列方式二选一)
+`/comehere` - 绑定你所在的语音频道 [推荐]
+`/channel {channel_id}` - 通过语音频道ID绑定
 """
                 , type=Types.Text.KMD
             )
         )
     )
+
     # other command
     card.append(
         Module.Section(
             Element.Text(
 """
-:yarn: 其他指令 :yarn:
-`apex server` - 查询 apex 服务器情况
-`music [歌曲信息]` - 从网易云找首指定的歌(高损音质)
+:musical_note:  **音乐指令**  :musical_note:
+`/play {music_name}` - 点歌
+`/search {keyword}` - 搜索歌曲
+`/select {search_list_id}` - 从搜索的列表中选择歌曲
+`/bilibili {BV_id}` - 点播B站视频 [实验功能, 暂不稳定]
+`/list` - 查看播放列表
+`/cut` - 切歌
+`/remove {list_id}` - 删除歌单中的歌曲
+`/top {list_id}` - 播放列表中的歌曲置顶
+
+> [邀请 镜华Kyouka 到你的频道](https://www.kaiheila.cn/app/oauth2/authorize?id=11188&permissions=150992896&client_id=4sZmSkS9Ex2SOlFv&redirect_uri=&scope=bot)
 """
                 , type=Types.Text.KMD
             )
         )
     )
+
     return card
