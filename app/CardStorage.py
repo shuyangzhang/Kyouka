@@ -38,10 +38,10 @@ def NowMusicCard(music_list:list) -> Card:
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                src=first_music[__MusicListIndex.MUSIC_PIC_URL.value]
+                src = first_music[__MusicListIndex.MUSIC_PIC_URL.value]
                 #src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
             ),
-            mode=Types.SectionMode.LEFT
+            mode=Types.SectionMode.RIGHT
         )
     )
 
@@ -94,7 +94,12 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
                 Element.Text(
                     f"**    ({index+2})    {one_music_des[__MusicListIndex.MUSIC_NAME.value]} - {one_music_des[__MusicListIndex.MUSIC_AUTHOR.value]}**",
                     type=Types.Text.KMD
-                )
+                ),
+                accessory=Element.Image(
+                    src = one_music_des[__MusicListIndex.MUSIC_PIC_URL.value]
+                    #src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+                ),
+                mode=Types.SectionMode.LEFT
             )
         )
         remaining_list_card.append(
@@ -114,3 +119,37 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
         remaining_list_card.append(Module.Divider())
 
     return NowMusicCard(music_list), remaining_list_card
+
+
+def HelpCard() -> Card:
+    card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
+    # title
+    card.append(Module.Header(":skull:  DAEK Commands"))
+    card.append(Module.Section(Element.Text("在所有命令前添加 `daek` 前缀！")))
+    # base command
+    card.append(
+        Module.Section(
+            Element.Text(
+"""
+:bone:  基础指令 :bone:
+`help` - 获取当前帮助文档
+`info` - 获取角色信息
+"""
+                , type=Types.Text.KMD
+            )
+        )
+    )
+    # other command
+    card.append(
+        Module.Section(
+            Element.Text(
+"""
+:yarn: 其他指令 :yarn:
+`apex server` - 查询 apex 服务器情况
+`music [歌曲信息]` - 从网易云找首指定的歌(高损音质)
+"""
+                , type=Types.Text.KMD
+            )
+        )
+    )
+    return card
