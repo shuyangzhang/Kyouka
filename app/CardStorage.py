@@ -38,8 +38,8 @@ def NowMusicCard(music_list:list) -> Card:
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                #src=first_music[__MusicListIndex.MUSIC_PIC_URL.value]
-                src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+                src=first_music[__MusicListIndex.MUSIC_PIC_URL.value]
+                #src="http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
             ),
             mode=Types.SectionMode.LEFT
         )

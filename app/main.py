@@ -166,10 +166,10 @@ async def play_music(msg: Message, *args):
         if not music_name:
             raise Exception("输入格式有误。\n正确格式为: /play {music_name} 或 /点歌 {music_name}")
         else:
-            matched, name, vocalist, source, duration = await fetch_music_source_by_name(music_name)
+            matched, name, vocalist, source, duration, cover_image_url = await fetch_music_source_by_name(music_name)
             if matched:
                 await msg.channel.send(f"已将 {name}-{vocalist} 添加到播放列表")
-                PLAYQUEUE.append([name, vocalist, source, duration, -1, ""])
+                PLAYQUEUE.append([name, vocalist, source, duration, -1, cover_image_url])
             else:
                 await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
     except Exception as e:
@@ -255,8 +255,6 @@ async def select_candidate(msg: Message, candidate_num: int=0):
                     raise Exception(f"搜索列表只有 {length} 个结果哦, 你不能选择第 {candidate_num} 个结果")
                 else:
                     selected_music = candidates[candidate_num - 1]
-                    selected_music.append(-1)
-                    selected_music.append("")
                     CANDIDATES_MAP.pop(author_id, None)
                     PLAYQUEUE.append(selected_music)
                     await msg.channel.send(f"已将 {selected_music[0]}-{selected_music[1]} 添加到播放列表")
