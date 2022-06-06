@@ -136,8 +136,8 @@ def HelpCard() -> Card:
             Element.Text(
 """
 :headphones:  **绑定语音频道**  :headphones: (下列方式二选一)
-`/comehere` - 绑定你所在的语音频道 [推荐]
-`/channel {channel_id}` - 通过语音频道ID绑定
+`.comehere` - 绑定你所在的语音频道 [推荐]
+`.channel {channel_id}` - 通过语音频道ID绑定
 """
                 , type=Types.Text.KMD
             )
@@ -150,17 +150,17 @@ def HelpCard() -> Card:
             Element.Text(
 """
 :musical_note:  **音乐指令**  :musical_note:
-`/play {music_name}` - 点歌
-`/search {keyword}` - 搜索歌曲
-`/select {search_list_id}` - 从搜索的列表中选择歌曲
-`/bilibili {BV_id}` - 点播B站视频 [实验功能, 暂不稳定]
-`/list` - 查看播放列表
-`/cut` - 切歌
-`/remove {list_id}` - 删除歌单中的歌曲
-`/top {list_id}` - 播放列表中的歌曲置顶
+`.play {music_name}` - 点歌
+`.search {keyword}` - 搜索歌曲
+`.select {search_list_id}` - 从搜索的列表中选择歌曲
+`.bilibili {BV_id}` - 点播B站视频 [实验功能, 暂不稳定]
+`.list` - 查看播放列表
+`.cut` - 切歌
+`.remove {list_id}` - 删除歌单中的歌曲
+`.top {list_id}` - 播放列表中的歌曲置顶
 
-> [邀请 镜华Kyouka 到你的服务器](https://www.kaiheila.cn/app/oauth2/authorize?id=11188&permissions=150992896&client_id=4sZmSkS9Ex2SOlFv&redirect_uri=&scope=bot)
 """
+# > [邀请 镜华Kyouka 到你的服务器](https://www.kaiheila.cn/app/oauth2/authorize?id=11188&permissions=150992896&client_id=4sZmSkS9Ex2SOlFv&redirect_uri=&scope=bot)
                 , type=Types.Text.KMD
             )
         )
