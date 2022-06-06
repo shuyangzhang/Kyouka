@@ -16,7 +16,7 @@ from app.utils.channel_utils import get_joined_voice_channel_id
 import app.CardStorage as CS
 
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 load_dotenv()
 
