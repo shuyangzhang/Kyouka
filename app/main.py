@@ -1,3 +1,4 @@
+from ast import keyword
 import os
 import traceback
 import collections
@@ -171,7 +172,7 @@ async def come_to_my_voice_channel(msg: Message):
 async def play_music(msg: Message, *args):
     global PLAYQUEUE
     try:
-        music_name = "".join(args)
+        music_name = " ".join(args)
         if not music_name:
             raise Exception("输入格式有误。\n正确格式为: /play {music_name} 或 /点歌 {music_name}")
         else:
@@ -208,10 +209,11 @@ async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
             await msg.channel.send(str(e))
 
 @bot.command(name="search", aliases=["搜索", "搜"])
-async def search_music(msg: Message, keyword: str=""):
+async def search_music(msg: Message, *args):
     global CANDIDATES_MAP
 
     try:
+        keyword = " ".join(args)
         if not keyword:
             raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
         else:
@@ -274,7 +276,7 @@ async def select_candidate(msg: Message, candidate_num: int=0):
         else:
             await msg.channel.send(str(e))
 
-@bot.command(name="list", aliases=["列表", "播放列表", "队列"])
+@bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
 async def play_list(msg: Message):
     try:
         play_list = list(PLAYQUEUE)
