@@ -159,7 +159,7 @@ def HelpCard() -> Card:
 `/remove {list_id}` - 删除歌单中的歌曲
 `/top {list_id}` - 播放列表中的歌曲置顶
 
-> [邀请 镜华Kyouka 到你的频道](https://www.kaiheila.cn/app/oauth2/authorize?id=11188&permissions=150992896&client_id=4sZmSkS9Ex2SOlFv&redirect_uri=&scope=bot)
+> [邀请 镜华Kyouka 到你的服务器](https://www.kaiheila.cn/app/oauth2/authorize?id=11188&permissions=150992896&client_id=4sZmSkS9Ex2SOlFv&redirect_uri=&scope=bot)
 """
                 , type=Types.Text.KMD
             )
