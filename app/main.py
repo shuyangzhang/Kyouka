@@ -4,11 +4,12 @@ import traceback
 import collections
 import datetime
 import aiohttp
-import requests
+
 from khl import Message, Bot
 from khl.card import CardMessage
 from dotenv import load_dotenv
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
+from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy, BPROXY_API
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
@@ -16,7 +17,7 @@ from app.utils.channel_utils import get_joined_voice_channel_id
 import app.CardStorage as CS
 
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 load_dotenv()
 
@@ -187,29 +188,26 @@ async def play_music(msg: Message, *args):
             await msg.channel.send(traceback.format_exc())
         else:
             await msg.channel.send(str(e))
-#@bot.command(name='import', aliases=["导入歌单"])
-async def listen(msg: Message, linkid : str):
+
+@bot.command(name='import', aliases=["导入", "导入歌单"])
+async def import_music_by_playlist(msg: Message, playlist_id : str=""):
     global PLAYQUEUE
-    url = "https://music.163.com/playlist/?id="+linkid
-    headers = {
-        'authority': 'music.163.com',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
-        'content-type': 'application/x-www-form-urlencoded',
-        'accept': '*/*',
-        'origin': 'https://music.163.com',
-        'sec-fetch-site': 'same-origin',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-dest': 'empty',
-        'referer': 'https://music.163.com/search/',
-        'accept-language': 'zh-CN,zh;q=0.9',
-    }
-    response = requests.get(url=url, headers=headers)
-    pattern = '\<li>\<a href="/song\?id=(.*?)">(.*?)</a></li>'
-    matches = re.findall(pattern,response.text)
-    for item in matches:
-        matched, name, vocalist, source, duration, cover_image_url = await fetch_music_source_by_name(item[1])
-        PLAYQUEUE.append([name, vocalist, source, duration, -1, cover_image_url])
-    await msg.channel.send("导入完成")
+    try:
+        if not playlist_id:
+            raise Exception("输入格式有误。\n正确格式为: /import {playlist_id} 或 /导入 {playlist_name}")
+        else:
+            result = await fetch_music_list_by_id(playlist_id=playlist_id)
+            if not result:
+                raise Exception("歌单为空哦，请检查你的输入")
+            else:
+                for this_music in result:
+                    PLAYQUEUE.append(this_music)
+        await msg.channel.send("导入成功, 输入 /list 查看播放列表")
+    except Exception as e:
+        if DEBUG:
+            await msg.channel.send(traceback.format_exc())
+        else:
+            await msg.channel.send(str(e))
    
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
