@@ -187,7 +187,30 @@ async def play_music(msg: Message, *args):
             await msg.channel.send(traceback.format_exc())
         else:
             await msg.channel.send(str(e))
-
+#@bot.command(name='import', aliases=["导入歌单"])
+async def listen(msg: Message, linkid : str):
+    global PLAYQUEUE
+    url = "https://music.163.com/playlist/?id="+linkid
+    headers = {
+        'authority': 'music.163.com',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36',
+        'content-type': 'application/x-www-form-urlencoded',
+        'accept': '*/*',
+        'origin': 'https://music.163.com',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        'referer': 'https://music.163.com/search/',
+        'accept-language': 'zh-CN,zh;q=0.9',
+    }
+    response = requests.get(url=url, headers=headers)
+    pattern = '\<li>\<a href="/song\?id=(.*?)">(.*?)</a></li>'
+    matches = re.findall(pattern,response.text)
+    for item in matches:
+        matched, name, vocalist, source, duration, cover_image_url = await fetch_music_source_by_name(item[1])
+        PLAYQUEUE.append([name, vocalist, source, duration, -1, cover_image_url])
+    await msg.channel.send("导入完成")
+   
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
     global PLAYQUEUE
