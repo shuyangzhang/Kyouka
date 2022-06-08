@@ -4,7 +4,7 @@ import traceback
 import collections
 import datetime
 import aiohttp
-
+import requests
 from khl import Message, Bot
 from khl.card import CardMessage
 from dotenv import load_dotenv
