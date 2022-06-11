@@ -1,4 +1,5 @@
 import aiohttp
+from loguru import logger
 
 
 BILIBILI_VIDEO_INFO_API = "http://api.bilibili.com/x/web-interface/view"
@@ -30,7 +31,7 @@ async def fetch_basic_video_info_by_BVid(BVid: str):
                     author = ""
                     cid = 0
                     duration = 0
-    print(matched, name, author, cid, duration)
+    logger.debug(f"{[matched, name, author, cid, duration]}")
     return matched, name, author, cid, duration
 
 async def fetch_audio_source_by_BVid_and_cid(BVid: str, cid: int):
@@ -55,7 +56,7 @@ async def fetch_audio_source_by_BVid_and_cid(BVid: str, cid: int):
                 else:
                     matched = False
                     source = ""
-    print(matched, source)
+    logger.debug(f"{[matched, source]}")
     return matched, source
 
 async def bvid_to_music(BVid: str):
@@ -65,7 +66,7 @@ async def bvid_to_music(BVid: str):
     else:
         matched, source = await fetch_audio_source_by_BVid_and_cid(BVid=BVid, cid=cid)
     
-    print(matched, name, author, source, duration)
+    logger.debug(f"{[matched, name, author, source, duration]}")
     return matched, name, author, source, duration
 
 async def bvid_to_music_by_bproxy(BVid: str):
@@ -93,7 +94,7 @@ async def bvid_to_music_by_bproxy(BVid: str):
                     source = ""
                     duration = 0
                     cover_image_url = ""
-    print(matched, name, author, source, duration, cover_image_url)
+    logger.debug(f"{[matched, name, author, source, duration, cover_image_url]}")
     return matched, name, author, source, duration, cover_image_url
 
 if __name__ == "__main__":

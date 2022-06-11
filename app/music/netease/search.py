@@ -1,5 +1,6 @@
 import aiohttp
 import json
+from loguru import logger
 
 
 NETEASE_API = "http://cloud-music.pl-fe.cn/"
@@ -58,7 +59,7 @@ async def fetch_music_source_by_name(music_name: str):
                     duration = 0
                     cover_image_url = ""
 
-    print(matched, name, vocalist, source, duration, cover_image_url)
+    logger.debug(f"{[matched, name, vocalist, source, duration, cover_image_url]}")
     return matched, name, vocalist, source, duration, cover_image_url
 
 async def search_music_by_keyword(music_name: str, limit: int=5):
@@ -92,7 +93,7 @@ async def search_music_by_keyword(music_name: str, limit: int=5):
                     matched = False
                     candidates = []
 
-    print(candidates)
+    logger.debug(f"{[candidates]}")
     return matched, candidates
 
 

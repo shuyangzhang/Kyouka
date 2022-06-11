@@ -1,4 +1,5 @@
 import docker
+from loguru import logger
 
 
 IMAGE_NAME = "shuyangzhang/khl-voice"
@@ -12,7 +13,7 @@ async def create_container(token: str, channel: str, source: str, repeat: str, c
         "SOURCE": source,
         "REPEAT": repeat,
     }
-    print(env_dict)
+    logger.debug(f"{env_dict}")
     CLIENT.containers.run(
         IMAGE_NAME,
         auto_remove = True,
@@ -27,19 +28,18 @@ async def stop_container(container_name: str):
         container = CLIENT.containers.get(container_name)
         container.stop()
     except docker.errors.NotFound:
-        print(f"{container_name} is not running")
+        logger.warning(f"{container_name} is not running")
 
 async def pause_container(container_name: str):
     try:
         container = CLIENT.containers.get(container_name)
         container.pause()
     except docker.errors.NotFound:
-        print(f"{container_name} is not running")
+        logger.warning(f"{container_name} is not running")
 
 async def unpause_container(container_name: str):
     try:
         container = CLIENT.containers.get(container_name)
         container.unpause()
     except docker.errors.NotFound:
-        print(f"{container_name} is not running")
-
+        logger.warning(f"{container_name} is not running")

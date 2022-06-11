@@ -2,6 +2,7 @@ import aiohttp
 import re
 import json
 
+from loguru import logger
 from app.music.netease.search import NETEASE_DETAIL_URL, NETEASE_SOURCE_URL
 #from search import NETEASE_DETAIL_URL, NETEASE_SOURCE_URL
 
@@ -61,7 +62,7 @@ async def fetch_music_list_by_id(playlist_id: str):
         if matched:
             result.append([name, vocalist, source, duration, -1, cover_image_url])
 
-    print(result)
+    logger.debug(f"{result}")
     return result
 
 if __name__ == "__main__":
