@@ -7,7 +7,8 @@ import aiohttp
 from loguru import logger
 from khl import Message, Bot
 from khl.card import CardMessage
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
+from app.config.common import settings
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy, BPROXY_API
@@ -20,26 +21,11 @@ import app.CardStorage as CS
 
 __version__ = "0.4.2"
 
-load_dotenv()
-
-TOKEN= os.environ.get("TOKEN")
-CHANNEL = os.environ.get("CHANNEL")
-CONTAINER_NAME = os.environ.get("CONTAINER_NAME", "Kyouka")
-RE_PREFIX_SWITCH = os.environ.get("RE_PREFIX_SWITCH", False)
-
-DEBUG = False
-
-PLAYED = 0  # ms
-PLAYQUEUE = collections.deque()
-LOCK = False
-
-CANDIDATES_MAP = {}
-CANDIDATES_LOCK = False
+# load_dotenv()
 
 # logger
-FILE_LOGGER = os.environ.get("FILE_LOGGER", False)
-if FILE_LOGGER:
-    logger.add(f"{CONTAINER_NAME}.log", rotation="1 week")
+if settings.file_logger:
+    logger.add(f"{settings.container_name}.log", rotation="1 week")
 
 ######################
 ## re command support
@@ -55,7 +41,7 @@ RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"(?:[kK][yY][Oo][Uu][Kk][Aa]
 
 ######################
 
-bot = Bot(token=TOKEN)
+bot = Bot(token=settings.token)
 
 
 ################## music
@@ -67,7 +53,8 @@ async def msg_btn_click(b:Bot,event:Event):
     action, *args = (value.split(":"))
     await channel.send(f"action:{action} arg:{args}")
     # use action to do something
-
+    
+    # this function is WIP 
 ##################
 
 
@@ -80,7 +67,7 @@ async def regular_play_music(msg:Message, music_name:str):
     :param music_name: 歌曲名，通过正则获取
     :other: 此处唤醒示例为: Kyouka来首STAY / kyouka 播放 STAY / kyouka 我要点歌 STAY / ... 
     """
-    if RE_PREFIX_SWITCH:
+    if settings.re_prefix_switch:
         await bot.command.get("play").handler(msg, music_name)
     
 # 列表 这里有更好的唤醒方法可以再提
@@ -89,13 +76,13 @@ async def regular_list_music(msg:Message):
     """
     print music list
     """
-    if RE_PREFIX_SWITCH:
+    if settings.re_prefix_switch:
         await bot.command.get("list").handler(msg)
     
 # 来我房间
 @bot.command(name="RE_come_here",regex= RE_PREFIX + r'来我(?:房间|频道|语音).*?')
 async def regular_come_here(msg:Message):
-    if RE_PREFIX_SWITCH:
+    if settings.re_prefix_switch:
         await bot.command.get("comehere").handler(msg)
 
 # 下一首歌
@@ -104,7 +91,7 @@ async def regular_cut_music(msg:Message):
     """
     next music(regular)
     """
-    if RE_PREFIX_SWITCH:
+    if settings.re_prefix_switch:
         await bot.command.get("cut").handler(msg)
 
 #########################
@@ -128,10 +115,9 @@ async def help(msg: Message):
 @bot.command(name="debug")
 @log
 async def debug(msg: Message):
-    if msg.author.id in ["693543263"]:
-        global DEBUG
-        DEBUG = not DEBUG
-        if DEBUG:
+    if msg.author.id in settings.admin_users:
+        settings.debug = not settings.debug
+        if settings.debug:
             await msg.channel.send("debug switch is on")
         else:
             await msg.channel.send("debug switch is off")
@@ -144,9 +130,8 @@ async def update_voice_channel(msg: Message, channel_id: str=""):
     if not channel_id:
         raise Exception("输入格式有误。\n正确格式为: /channel {channel_id} 或 /频道 {channel_id}")
     else:
-        global CHANNEL
-        CHANNEL = channel_id
-        await msg.channel.send(f"语音频道更新为: {CHANNEL}")
+        settings.channel = channel_id
+        await msg.channel.send(f"语音频道更新为: {settings.channel}")
 
 @bot.command(name="comehere", aliases=["来", "来我频道", "come"])
 @log
@@ -166,8 +151,6 @@ async def come_to_my_voice_channel(msg: Message):
 @bot.command(name="play", aliases=["点歌"])
 @log
 async def play_music(msg: Message, *args):
-    global PLAYQUEUE
-    
     music_name = " ".join(args)
     if not music_name:
         raise Exception("输入格式有误。\n正确格式为: /play {music_name} 或 /点歌 {music_name}")
@@ -175,15 +158,13 @@ async def play_music(msg: Message, *args):
         matched, name, vocalist, source, duration, cover_image_url = await fetch_music_source_by_name(music_name)
         if matched:
             await msg.channel.send(f"已将 {name}-{vocalist} 添加到播放列表")
-            PLAYQUEUE.append([name, vocalist, source, duration, -1, cover_image_url])
+            settings.playqueue.append([name, vocalist, source, duration, -1, cover_image_url])
         else:
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
 
 @bot.command(name='import', aliases=["导入", "导入歌单"])
 @log
 async def import_music_by_playlist(msg: Message, playlist_id : str=""):
-    global PLAYQUEUE
-
     if not playlist_id:
         raise Exception("输入格式有误。\n正确格式为: /import {playlist_id} 或 /导入 {playlist_name}")
     else:
@@ -192,29 +173,25 @@ async def import_music_by_playlist(msg: Message, playlist_id : str=""):
             raise Exception("歌单为空哦，请检查你的输入")
         else:
             for this_music in result:
-                PLAYQUEUE.append(this_music)
+                settings.playqueue.append(this_music)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
    
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 @log
 async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
-    global PLAYQUEUE
-
     if not BVid:
         raise Exception("输入格式有误。\n正确格式为: /bilibili {BVid} 或 /bv {BVid}")
     else:
         matched, name, author, source, duration, cover_image_url = await bvid_to_music_by_bproxy(BVid=BVid)
         if matched:
             await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
-            PLAYQUEUE.append([name, author, source, duration, -1, cover_image_url])
+            settings.playqueue.append([name, author, source, duration, -1, cover_image_url])
         else:
             await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
 
 @bot.command(name="search", aliases=["搜索", "搜"])
 @log
 async def search_music(msg: Message, *args):
-    global CANDIDATES_MAP
-
     keyword = " ".join(args)
     if not keyword:
         raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
@@ -228,8 +205,8 @@ async def search_music(msg: Message, *args):
                 "candidates": candidates,
                 "expire": expire,
             }
-            CANDIDATES_MAP.pop(author_id, None)
-            CANDIDATES_MAP[author_id] = candidates_body
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
 
             # then generate the select menu
             select_menu_msg = "已匹配到如下结果：\n"
@@ -245,18 +222,15 @@ async def search_music(msg: Message, *args):
 @bot.command(name="select", aliases=["pick", "选择", "选"])
 @log
 async def select_candidate(msg: Message, candidate_num: str=""):
-    global CANDIDATES_MAP
-    global PLAYQUEUE
-
     candidate_num = int(candidate_num)
     if not candidate_num:
         raise Exception("输入格式有误。\n正确格式为: /select {编号} 或 /选 {编号}")
     else:
         author_id = msg.author.id
-        if author_id not in CANDIDATES_MAP:
+        if author_id not in settings.candidates_map:
             raise Exception("你还没有搜索哦, 或者是你的搜索结果已过期(1分钟)")
         else:
-            candidates = CANDIDATES_MAP[author_id].get("candidates")
+            candidates = settings.candidates_map[author_id].get("candidates")
             length = len(candidates)
             if candidate_num <= 0:
                 raise Exception("输入不合法, 请不要输入0或者负数")
@@ -264,14 +238,14 @@ async def select_candidate(msg: Message, candidate_num: str=""):
                 raise Exception(f"搜索列表只有 {length} 个结果哦, 你不能选择第 {candidate_num} 个结果")
             else:
                 selected_music = candidates[candidate_num - 1]
-                CANDIDATES_MAP.pop(author_id, None)
-                PLAYQUEUE.append(selected_music)
+                settings.candidates_map.pop(author_id, None)
+                settings.playqueue.append(selected_music)
                 await msg.channel.send(f"已将 {selected_music[0]}-{selected_music[1]} 添加到播放列表")
 
 @bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
 @log
 async def play_list(msg: Message):
-    play_list = list(PLAYQUEUE)
+    play_list = list(settings.playqueue)
     if not play_list:
         await msg.channel.send("当前的播放列表为空哦")
     else:
@@ -294,44 +268,39 @@ async def play_list(msg: Message):
 @bot.command(name="cut", aliases=["next", "切歌", "下一首", "切"])
 @log
 async def cut_music(msg: Message):
-    global PLAYQUEUE
-    global PLAYED
-
-    play_list = list(PLAYQUEUE)
+    play_list = list(settings.playqueue)
     if not play_list:
         await msg.channel.send("当前的播放列表为空哦")
     else:
         if len(play_list) == 1:
             await msg.channel.send("正在切歌，请稍候")
-            PLAYQUEUE.popleft()
-            await stop_container(CONTAINER_NAME)
+            settings.playqueue.popleft()
+            await stop_container(settings.container_name)
             await msg.channel.send("后面没歌了哦")
-            PLAYED = 0
+            settings.played = 0
         else:
             await msg.channel.send("正在切歌，请稍候")
-            PLAYQUEUE.popleft()
-            await stop_container(CONTAINER_NAME)
-            next_music = list(PLAYQUEUE)[0]
-            await stop_container(CONTAINER_NAME)
-            await create_container(TOKEN, CHANNEL, next_music[2], "false", CONTAINER_NAME)
+            settings.playqueue.popleft()
+            await stop_container(settings.container_name)
+            next_music = list(settings.playqueue)[0]
+            await stop_container(settings.container_name)
+            await create_container(settings.token, settings.channel, next_music[2], "false", settings.container_name)
 
-            current_music = PLAYQUEUE.popleft()
+            current_music = settings.playqueue.popleft()
             current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-            PLAYQUEUE.appendleft(current_music)
+            settings.playqueue.appendleft(current_music)
 
             await msg.channel.send(f"正在为您播放 {next_music[0]} - {next_music[1]}")
-            PLAYED = 5000
+            settings.played = 5000
 
 @bot.command(name="remove", aliases=["rm", "删除", "删"])
 @log
 async def remove_music_in_play_list(msg: Message, music_number: str=""):
-    global PLAYQUEUE
-
     music_number = int(music_number)
     if not music_number:
         raise Exception("格式输入有误。\n正确格式为: /remove {list_number} 或 /删除 {list_number}")
     else:
-        play_list_length = len(PLAYQUEUE)
+        play_list_length = len(settings.playqueue)
         if not play_list_length:
             raise Exception("播放列表中没有任何歌曲哦")
         else:
@@ -342,22 +311,20 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
             elif music_number <= 0:
                 raise Exception(f"输入不合法, 请不要输入0或者负数")
             else:
-                play_list = list(PLAYQUEUE)
+                play_list = list(settings.playqueue)
                 removed_music = play_list[music_number - 1]
-                del PLAYQUEUE[music_number - 1]
+                del settings.playqueue[music_number - 1]
                 await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
 
 
 @bot.command(name="top", aliases=["置顶", "顶"])
 @log
 async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
-    global PLAYQUEUE
-
     music_number = int(music_number)
     if not music_number:
         raise Exception("格式输入有误。\n正确格式为: /top {list_number} 或 /顶 {list_number}")
     else:
-        play_list_length = len(PLAYQUEUE)
+        play_list_length = len(settings.playqueue)
         if not play_list_length:
             raise Exception("播放列表中没有任何歌曲哦")
         else:
@@ -368,39 +335,33 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
             elif music_number <= 0:
                 raise Exception(f"输入不合法, 请不要输入0或者负数")
             else:
-                play_list = list(PLAYQUEUE)
+                play_list = list(settings.playqueue)
                 to_top_music = play_list[music_number - 1]
-                del PLAYQUEUE[music_number - 1]
-                PLAYQUEUE.insert(1, to_top_music)
+                del settings.playqueue[music_number - 1]
+                settings.playqueue.insert(1, to_top_music)
                 await msg.channel.send(f"已将歌曲 {to_top_music[0]}-{to_top_music[1]} 在播放列表中置顶")
 
 @bot.command(name="pause", aliases=["暂停"])
 @log
 async def pause(msg: Message):
-    await pause_container(CONTAINER_NAME)
+    await pause_container(settings.container_name)
 
 @bot.command(name="unpause", aliases=["取消暂停", "继续"])
 @log
 async def unpause(msg: Message):
-    await unpause_container(CONTAINER_NAME)
+    await unpause_container(settings.container_name)
 
 """
 @bot.command(name="stop", aliases=["停止", "结束"])
 async def stop_music(msg: Message):
-    try:
-        await msg.channel.send("正在结束...请稍候")
-        await stop_container(CONTAINER_NAME)
-    except Exception as e:
-        if DEBUG:
-            await msg.channel.send(traceback.format_exc())
-        else:
-            await msg.channel.send(str(e))
+    await msg.channel.send("正在结束...请稍候")
+    await stop_container(settings.container_name)
 """
 
 @bot.command(name="logout")
 @log
 async def logout(msg: Message):
-    if msg.author.id in ["693543263"]:
+    if msg.author.id in settings.admin_users:
         await msg.channel.send("logging out now...")
         raise KeyboardInterrupt()
     else:
@@ -409,92 +370,85 @@ async def logout(msg: Message):
 # repeated tasks
 @bot.task.add_interval(seconds=5)
 async def update_played_time_and_change_music():
-    global PLAYED
-    global PLAYQUEUE
-    global LOCK
-    
-    logger.debug(f"PLAYED: {PLAYED}")
-    logger.debug(f"Q: {PLAYQUEUE}")
-    logger.debug(f"LOCK: {LOCK}")
+    logger.debug(f"PLAYED: {settings.played}")
+    logger.debug(f"Q: {settings.playqueue}")
+    logger.debug(f"LOCK: {settings.lock}")
 
-    if LOCK:
+    if settings.lock:
         return None
     else:
-        LOCK = True
+        settings.lock = True
 
         try:
-            if len(PLAYQUEUE) == 0:
-                PLAYED = 0
-                LOCK = False
+            if len(settings.playqueue) == 0:
+                settings.played = 0
+                settings.lock = False
                 return None
             else:
-                first_music = list(PLAYQUEUE)[0]
-                if PLAYED == 0:
-                    await stop_container(CONTAINER_NAME)
-                    await create_container(TOKEN, CHANNEL, first_music[2], "false", CONTAINER_NAME)
+                first_music = list(settings.playqueue)[0]
+                if settings.played == 0:
+                    await stop_container(settings.container_name)
+                    await create_container(settings.token, settings.channel, first_music[2], "false", settings.container_name)
                     
-                    current_music = PLAYQUEUE.popleft()
+                    current_music = settings.playqueue.popleft()
                     current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-                    PLAYQUEUE.appendleft(current_music)
+                    settings.playqueue.appendleft(current_music)
 
-                    PLAYED += 5000
-                    LOCK = False
+                    settings.played += 5000
+                    settings.lock = False
                     return None
                 else:
                     duration = first_music[3]
-                    if PLAYED + 5000 < duration:
-                        PLAYED += 5000
-                        LOCK = False
+                    if settings.played + 5000 < duration:
+                        settings.played += 5000
+                        settings.lock = False
                         return None
                     else:
-                        PLAYQUEUE.popleft()
-                        if len(PLAYQUEUE) == 0:
-                            await stop_container(CONTAINER_NAME)
-                            PLAYED = 0
-                            LOCK = False
+                        settings.playqueue.popleft()
+                        if len(settings.playqueue) == 0:
+                            await stop_container(settings.container_name)
+                            settings.played = 0
+                            settings.lock = False
                             return None
                         else:
-                            next_music = list(PLAYQUEUE)[0]
-                            await stop_container(CONTAINER_NAME)
-                            await create_container(TOKEN, CHANNEL, next_music[2], "false", CONTAINER_NAME)
+                            next_music = list(settings.playqueue)[0]
+                            await stop_container(settings.container_name)
+                            await create_container(settings.token, settings.channel, next_music[2], "false", settings.container_name)
 
-                            current_music = PLAYQUEUE.popleft()
+                            current_music = settings.playqueue.popleft()
                             current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-                            PLAYQUEUE.appendleft(current_music)
+                            settings.playqueue.appendleft(current_music)
 
-                            PLAYED = 5000
-                            LOCK = False
+                            settings.played = 5000
+                            settings.lock = False
                             return None
         except Exception as e:
-            LOCK = False
+            settings.lock = False
             logger.error(f"error occurred in automatically changing music, error msg: {e}, traceback: {traceback.format_exc()}")
 
 @bot.task.add_interval(seconds=10)
 async def clear_expired_candidates_cache():
-    global CANDIDATES_MAP
-    global CANDIDATES_LOCK
-
-    if CANDIDATES_LOCK:
+    if settings.candidates_lock:
         return None
     else:
-        CANDIDATES_LOCK = True
+        settings.candidates_lock = True
         try:
             now = datetime.datetime.now()
 
             need_to_clear = []
-            for this_user in CANDIDATES_MAP:
-                if now >= CANDIDATES_MAP.get(this_user, {}).get("expire", now):
+            for this_user in settings.candidates_map:
+                if now >= settings.candidates_map.get(this_user, {}).get("expire", now):
                     need_to_clear.append(this_user)
             
             for user_need_to_clear in need_to_clear:
-                CANDIDATES_MAP.pop(user_need_to_clear, None)
+                settings.candidates_map.pop(user_need_to_clear, None)
                 logger.info(f"cache of user: {user_need_to_clear} is removed")
             
-            CANDIDATES_LOCK = False
+            settings.candidates_lock = False
             return None
 
         except Exception as e:
-            CANDIDATES_LOCK = False
+            settings.candidates_lock = False
             logger.error(f"error occurred in clearing expired candidates cache, error msg: {e}, traceback: {traceback.format_exc()}")
 
 @bot.task.add_interval(minutes=1)

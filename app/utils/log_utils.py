@@ -3,8 +3,7 @@ import traceback
 
 from loguru import logger
 from khl import Message
-
-DEBUG = False
+from app.config.common import settings
 
 
 def loguru_decorator(func):
@@ -17,7 +16,7 @@ def loguru_decorator(func):
         except Exception as e:
             logger.error(f"error occurred, msg: {e}, log_id: {log_id}, traceback: {traceback.format_exc()}")
             try:
-                if DEBUG:
+                if settings.debug:
                     await msg.channel.send(traceback.format_exc())
                 else:
                     await msg.channel.send(str(e))
