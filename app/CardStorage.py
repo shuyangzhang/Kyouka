@@ -1,8 +1,9 @@
 import datetime
 
+from typing import Dict
 from khl.card import Card
 from khl.card.module import Module
-from khl.card.interface import Types
+from khl.card.interface import Types, _Module
 from khl.card.element import Element
 from khl.card.struct import Struct
 from khl.card.color import Color
@@ -21,6 +22,20 @@ class __MusicListIndex(Enum):
 
 __MUSIC_LIST_TILE_COLOR = "#9b59b6"
 __MUSIC_LIST_PLAYING_MUSIC_COLOR = "#a29bfe"
+
+
+class InviteModule(_Module):
+    _tyep = "invite"
+
+    def __init__ (self):
+        super().__init__(Types.Theme.NA, Types.Size.NA)
+
+    @property
+    def _repr(self) -> Dict:
+        return {
+            "type": "invite",
+            "code": "https://kaihei.co/oHRMIL"
+        }
 
 
 def NowMusicCard(music_list:list) -> Card:
@@ -127,7 +142,7 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.4.3 20220611 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.4.4 20220612 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
@@ -159,8 +174,22 @@ def HelpCard() -> Card:
 `/import {playlist_url}` - 导入网易云音乐歌单
 `/remove {list_id}` - 删除歌单中的歌曲
 `/top {list_id}` - 播放列表中的歌曲置顶
+"""
+                , type=Types.Text.KMD
+            )
+        )
+    )
 
-> [邀请 镜华Kyouka 到你的服务器](https://www.kaiheila.cn/app/oauth2/authorize?id=11188&permissions=150992896&client_id=4sZmSkS9Ex2SOlFv&redirect_uri=&scope=bot)
+    card.append(
+        InviteModule()
+    )
+
+    card.append(
+        Module.Context(
+            Element.Text(
+"""
+如有任何问题、意见、建议，或需要邀请、私人部署，或想一起开发镜华Kyouka，欢迎加入 镜华Kyouka 点歌机器人 官方服务器
+或 联系开发者 (met)693543263(met)
 """
                 , type=Types.Text.KMD
             )
