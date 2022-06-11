@@ -1,8 +1,4 @@
-import os
-import traceback
-import collections
 import datetime
-import aiohttp
 
 from loguru import logger
 from khl import Message, Bot
@@ -11,10 +7,11 @@ from khl.card import CardMessage
 from app.config.common import settings
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
-from app.music.bilibili.search import bvid_to_music_by_bproxy, BPROXY_API
+from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator as log
+from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive
 
 import app.CardStorage as CS
 
@@ -27,74 +24,8 @@ __version__ = "0.4.2"
 if settings.file_logger:
     logger.add(f"{settings.container_name}.log", rotation="1 week")
 
-######################
-## re command support
-
-# 正则处理时是否开启前缀
-RE_PREFIX_ENABLE = True
-
-# 正则前缀是否必须位于 最开始
-RE_PREFIX_INBEGINN = True
-
-# 正则处理时的命令前缀
-RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"(?:[kK][yY][Oo][Uu][Kk][Aa]|[kK]{2}).*?" if RE_PREFIX_ENABLE else r"")
-
-######################
-
 bot = Bot(token=settings.token)
 
-
-################## music
-from khl import Event,EventTypes
-@bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
-async def msg_btn_click(b:Bot,event:Event):
-    channel = await b.fetch_public_channel(event.body['target_id'])
-    value = event.body['value']
-    action, *args = (value.split(":"))
-    await channel.send(f"action:{action} arg:{args}")
-    # use action to do something
-    
-    # this function is WIP 
-##################
-
-
-######################
-## 正则的语义交流转换
-@bot.command(name="RE_play_music",regex= RE_PREFIX + r'(?:来首|点歌|来一首|点首|点一首)[ ]?(.*)')
-async def regular_play_music(msg:Message, music_name:str):
-    """
-    点歌，加入列表
-    :param music_name: 歌曲名，通过正则获取
-    :other: 此处唤醒示例为: Kyouka来首STAY / kyouka 播放 STAY / kyouka 我要点歌 STAY / ... 
-    """
-    if settings.re_prefix_switch:
-        await bot.command.get("play").handler(msg, music_name)
-    
-# 列表 这里有更好的唤醒方法可以再提
-@bot.command(name="RE_list_music",regex= RE_PREFIX + r'(?:列表|播放列表|队列).*?')
-async def regular_list_music(msg:Message):
-    """
-    print music list
-    """
-    if settings.re_prefix_switch:
-        await bot.command.get("list").handler(msg)
-    
-# 来我房间
-@bot.command(name="RE_come_here",regex= RE_PREFIX + r'来我(?:房间|频道|语音).*?')
-async def regular_come_here(msg:Message):
-    if settings.re_prefix_switch:
-        await bot.command.get("comehere").handler(msg)
-
-# 下一首歌
-@bot.command(name="RE_cut_music",regex= RE_PREFIX + r'(?:切歌|换歌|下一首|切).*?')
-async def regular_cut_music(msg:Message):
-    """
-    next music(regular)
-    """
-    if settings.re_prefix_switch:
-        await bot.command.get("cut").handler(msg)
-
-#########################
 
 @bot.command(name="ping")
 @log
@@ -316,7 +247,6 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
                 del settings.playqueue[music_number - 1]
                 await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
 
-
 @bot.command(name="top", aliases=["置顶", "顶"])
 @log
 async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
@@ -367,98 +297,92 @@ async def logout(msg: Message):
     else:
         await msg.channel.send("permission denied")
 
+
 # repeated tasks
 @bot.task.add_interval(seconds=5)
-async def update_played_time_and_change_music():
-    logger.debug(f"PLAYED: {settings.played}")
-    logger.debug(f"Q: {settings.playqueue}")
-    logger.debug(f"LOCK: {settings.lock}")
-
-    if settings.lock:
-        return None
-    else:
-        settings.lock = True
-
-        try:
-            if len(settings.playqueue) == 0:
-                settings.played = 0
-                settings.lock = False
-                return None
-            else:
-                first_music = list(settings.playqueue)[0]
-                if settings.played == 0:
-                    await stop_container(settings.container_name)
-                    await create_container(settings.token, settings.channel, first_music[2], "false", settings.container_name)
-                    
-                    current_music = settings.playqueue.popleft()
-                    current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-                    settings.playqueue.appendleft(current_music)
-
-                    settings.played += 5000
-                    settings.lock = False
-                    return None
-                else:
-                    duration = first_music[3]
-                    if settings.played + 5000 < duration:
-                        settings.played += 5000
-                        settings.lock = False
-                        return None
-                    else:
-                        settings.playqueue.popleft()
-                        if len(settings.playqueue) == 0:
-                            await stop_container(settings.container_name)
-                            settings.played = 0
-                            settings.lock = False
-                            return None
-                        else:
-                            next_music = list(settings.playqueue)[0]
-                            await stop_container(settings.container_name)
-                            await create_container(settings.token, settings.channel, next_music[2], "false", settings.container_name)
-
-                            current_music = settings.playqueue.popleft()
-                            current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-                            settings.playqueue.appendleft(current_music)
-
-                            settings.played = 5000
-                            settings.lock = False
-                            return None
-        except Exception as e:
-            settings.lock = False
-            logger.error(f"error occurred in automatically changing music, error msg: {e}, traceback: {traceback.format_exc()}")
+async def five_seconds_interval_tasks():
+    await update_played_time_and_change_music()
 
 @bot.task.add_interval(seconds=10)
-async def clear_expired_candidates_cache():
-    if settings.candidates_lock:
-        return None
-    else:
-        settings.candidates_lock = True
-        try:
-            now = datetime.datetime.now()
-
-            need_to_clear = []
-            for this_user in settings.candidates_map:
-                if now >= settings.candidates_map.get(this_user, {}).get("expire", now):
-                    need_to_clear.append(this_user)
-            
-            for user_need_to_clear in need_to_clear:
-                settings.candidates_map.pop(user_need_to_clear, None)
-                logger.info(f"cache of user: {user_need_to_clear} is removed")
-            
-            settings.candidates_lock = False
-            return None
-
-        except Exception as e:
-            settings.candidates_lock = False
-            logger.error(f"error occurred in clearing expired candidates cache, error msg: {e}, traceback: {traceback.format_exc()}")
+async def ten_seconds_interval_tasks():
+    await clear_expired_candidates_cache()
 
 @bot.task.add_interval(minutes=1)
-async def keep_bproxy_alive():
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(BPROXY_API) as r:
-                resp_json = await r.json()
-                logger.debug(resp_json)
-                logger.info("bproxy is alive now")
-    except Exception as e:
-        logger.error(f"bproxy is not available, error msg: {e}, traceback: {traceback.format_exc()}")
-        logger.error("bproxy is not alive now")
+async def one_minutes_interval_tasks():
+    await keep_bproxy_alive()
+
+
+# buttons reflection event, WIP
+from khl import Event,EventTypes
+@bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
+async def msg_btn_click(b:Bot,event:Event):
+    channel = await b.fetch_public_channel(event.body['target_id'])
+    value = event.body['value']
+    action, *args = (value.split(":"))
+    await channel.send(f"action:{action} arg:{args}")
+    # use action to do something
+    
+    # this function is WIP 
+##################
+
+
+###################
+# I personally think the following features (personalized regular matching commands, contributed by Froyo) 
+# are suitable for a private bot, not for an open source release, I've commented this part out for now, 
+# if I have better thoughts and ideas I'll restore there features.
+#                                                                        -- manako. 11th, June, 2022.
+###################
+
+'''
+######################
+## re command support
+
+# 正则处理时是否开启前缀
+RE_PREFIX_ENABLE = True
+
+# 正则前缀是否必须位于 最开始
+RE_PREFIX_INBEGINN = True
+
+# 正则处理时的命令前缀
+RE_PREFIX = (r"^" if RE_PREFIX_ENABLE else r"") + (r"(?:[kK][yY][Oo][Uu][Kk][Aa]|[kK]{2}).*?" if RE_PREFIX_ENABLE else r"")
+
+######################
+
+######################
+## 正则的语义交流转换
+@bot.command(name="RE_play_music",regex= RE_PREFIX + r'(?:来首|点歌|来一首|点首|点一首)[ ]?(.*)')
+async def regular_play_music(msg:Message, music_name:str):
+    """
+    点歌，加入列表
+    :param music_name: 歌曲名，通过正则获取
+    :other: 此处唤醒示例为: Kyouka来首STAY / kyouka 播放 STAY / kyouka 我要点歌 STAY / ... 
+    """
+    if settings.re_prefix_switch:
+        await bot.command.get("play").handler(msg, music_name)
+    
+# 列表 这里有更好的唤醒方法可以再提
+@bot.command(name="RE_list_music",regex= RE_PREFIX + r'(?:列表|播放列表|队列).*?')
+async def regular_list_music(msg:Message):
+    """
+    print music list
+    """
+    if settings.re_prefix_switch:
+        await bot.command.get("list").handler(msg)
+    
+# 来我房间
+@bot.command(name="RE_come_here",regex= RE_PREFIX + r'来我(?:房间|频道|语音).*?')
+async def regular_come_here(msg:Message):
+    if settings.re_prefix_switch:
+        await bot.command.get("comehere").handler(msg)
+
+# 下一首歌
+@bot.command(name="RE_cut_music",regex= RE_PREFIX + r'(?:切歌|换歌|下一首|切).*?')
+async def regular_cut_music(msg:Message):
+    """
+    next music(regular)
+    """
+    if settings.re_prefix_switch:
+        await bot.command.get("cut").handler(msg)
+
+#########################
+'''
