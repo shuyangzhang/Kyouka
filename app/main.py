@@ -1,3 +1,4 @@
+import re
 import datetime
 
 from loguru import logger
@@ -106,10 +107,16 @@ async def import_music_by_playlist(msg: Message, playlist_id : str=""):
    
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 @log
-async def play_audio_from_bilibili_video(msg: Message, BVid: str=""):
-    if not BVid:
-        raise Exception("输入格式有误。\n正确格式为: /bilibili {BVid} 或 /bv {BVid}")
+async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
+    if not bilibili_url:
+        raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
     else:
+        BVid_pattern = re.compile(r"BV\w{10}")
+        matched_obj = BVid_pattern.search(bilibili_url)
+        if matched_obj:
+            BVid = matched_obj.group()
+        else:
+            raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
         matched, name, author, source, duration, cover_image_url = await bvid_to_music_by_bproxy(BVid=BVid)
         if matched:
             await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
