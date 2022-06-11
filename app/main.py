@@ -3,7 +3,6 @@ import datetime
 from loguru import logger
 from khl import Message, Bot
 from khl.card import CardMessage
-#from dotenv import load_dotenv
 from app.config.common import settings
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
@@ -17,8 +16,6 @@ import app.CardStorage as CS
 
 
 __version__ = "0.4.2"
-
-# load_dotenv()
 
 # logger
 if settings.file_logger:
@@ -329,7 +326,7 @@ async def msg_btn_click(b:Bot,event:Event):
 ###################
 # I personally think the following features (personalized regular matching commands, contributed by Froyo) 
 # are suitable for a private bot, not for an open source release, I've commented this part out for now, 
-# if I have better thoughts and ideas I'll restore there features.
+# if I have better thoughts and ideas I'll restore these features.
 #                                                                        -- manako. 11th, June, 2022.
 ###################
 
