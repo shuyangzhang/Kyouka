@@ -165,15 +165,15 @@ def HelpCard() -> Card:
             Element.Text(
 """
 :musical_note:  **音乐指令**  :musical_note:
-`/play {music_name}` - 点歌
-`/search {keyword}` - 搜索歌曲
-`/select {search_list_id}` - 从搜索的列表中选择歌曲
-`/bilibili {bili_video_url}` - 点播B站视频 [实验功能, 暂不稳定]
-`/list` - 查看播放列表
-`/cut` - 切歌
-`/import {playlist_url}` - 导入网易云音乐歌单
-`/remove {list_id}` - 删除歌单中的歌曲
-`/top {list_id}` - 播放列表中的歌曲置顶
+`.play {music_name}` - 点歌
+`.search {keyword}` - 搜索歌曲
+`.select {search_list_id}` - 从搜索的列表中选择歌曲
+`.bilibili {bili_video_url}` - 点播B站视频 [实验功能, 暂不稳定]
+`.list` - 查看播放列表
+`.cut` - 切歌
+`.import {playlist_url}` - 导入网易云音乐歌单
+`.remove {list_id}` - 删除歌单中的歌曲
+`.top {list_id}` - 播放列表中的歌曲置顶
 """
                 , type=Types.Text.KMD
             )
