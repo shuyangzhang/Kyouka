@@ -58,7 +58,7 @@ async def debug(msg: Message):
 @log
 async def update_voice_channel(msg: Message, channel_id: str=""):
     if not channel_id:
-        raise Exception("输入格式有误。\n正确格式为: /channel {channel_id} 或 /频道 {channel_id}")
+        raise Exception("输入格式有误。\n正确格式为: .channel {channel_id} 或 .频道 {channel_id}")
     else:
         settings.channel = channel_id
         await msg.channel.send(f"语音频道更新为: {settings.channel}")
@@ -83,7 +83,7 @@ async def come_to_my_voice_channel(msg: Message):
 async def play_music(msg: Message, *args):
     music_name = " ".join(args)
     if not music_name:
-        raise Exception("输入格式有误。\n正确格式为: /play {music_name} 或 /点歌 {music_name}")
+        raise Exception("输入格式有误。\n正确格式为: .play {music_name} 或 .点歌 {music_name}")
     else:
         matched, name, vocalist, source, duration, cover_image_url = await fetch_music_source_by_name(music_name)
         if matched:
@@ -96,34 +96,34 @@ async def play_music(msg: Message, *args):
 @log
 async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
-        raise Exception("输入格式有误。\n正确格式为: /import {playlist_url} 或 /导入 {playlist_url}")
+        raise Exception("输入格式有误。\n正确格式为: .import {playlist_url} 或 .导入 {playlist_url}")
     else:
         netease_playlist_pattern = re.compile(r"playlist\?id=(\d+)")
         matched_obj = netease_playlist_pattern.search(playlist_url)
         if matched_obj:
             playlist_id = matched_obj.groups()[0]
         else:
-            raise Exception("输入格式有误。\n正确格式为: /import {playlist_id} 或 /导入 {playlist_name}")
+            raise Exception("输入格式有误。\n正确格式为: .import {playlist_id} 或 .导入 {playlist_name}")
         result = await fetch_music_list_by_id(playlist_id=playlist_id)
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
         else:
             for this_music in result:
                 settings.playqueue.append(this_music)
-    await msg.channel.send("导入成功, 输入 /list 查看播放列表")
+    await msg.channel.send("导入成功, 输入 .list 查看播放列表")
    
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 @log
 async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
     if not bilibili_url:
-        raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
+        raise Exception("输入格式有误。\n正确格式为: .bilibili {bilibili_url} 或 .bv {bilibili_url}")
     else:
         BVid_pattern = re.compile(r"BV\w{10}")
         matched_obj = BVid_pattern.search(bilibili_url)
         if matched_obj:
             BVid = matched_obj.group()
         else:
-            raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
+            raise Exception("输入格式有误。\n正确格式为: .bilibili {bilibili_url} 或 .bv {bilibili_url}")
         matched, name, author, source, duration, cover_image_url = await bvid_to_music_by_bproxy(BVid=BVid)
         if matched:
             await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
@@ -136,7 +136,7 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
 async def search_music(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
-        raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
+        raise Exception("输入格式有误。\n正确格式为: .search {keyword} 或 .搜 {keyword}")
     else:
         matched, candidates = await search_music_by_keyword(music_name=keyword)
         if matched:
@@ -155,7 +155,7 @@ async def search_music(msg: Message, *args):
             for index, this_item in enumerate(candidates):
                 this_item_str = f"<{index + 1}> {this_item[0]} - {this_item[1]} \n"
                 select_menu_msg += this_item_str
-            select_menu_msg += "\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)"
+            select_menu_msg += "\n输入 .select {编号} 或 .选 {编号} 即可加入歌单(一分钟内操作有效)"
             await msg.channel.send(select_menu_msg)
 
         else:
@@ -166,7 +166,7 @@ async def search_music(msg: Message, *args):
 async def select_candidate(msg: Message, candidate_num: str=""):
     candidate_num = int(candidate_num)
     if not candidate_num:
-        raise Exception("输入格式有误。\n正确格式为: /select {编号} 或 /选 {编号}")
+        raise Exception("输入格式有误。\n正确格式为: .select {编号} 或 .选 {编号}")
     else:
         author_id = msg.author.id
         if author_id not in settings.candidates_map:
@@ -240,7 +240,7 @@ async def cut_music(msg: Message):
 async def remove_music_in_play_list(msg: Message, music_number: str=""):
     music_number = int(music_number)
     if not music_number:
-        raise Exception("格式输入有误。\n正确格式为: /remove {list_number} 或 /删除 {list_number}")
+        raise Exception("格式输入有误。\n正确格式为: .remove {list_number} 或 .删除 {list_number}")
     else:
         play_list_length = len(settings.playqueue)
         if not play_list_length:
