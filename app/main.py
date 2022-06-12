@@ -272,7 +272,7 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
             if music_number == 1:
                 raise Exception("不能置顶正在播放的音乐, 它不是已经在播放了吗?")
             elif music_number > play_list_length:
-                raise Exception(f"列表中一共只有 {play_list_length} 首歌, 你置顶第 {music_number} 首歌")
+                raise Exception(f"列表中一共只有 {play_list_length} 首歌, 你不能置顶第 {music_number} 首歌")
             elif music_number <= 0:
                 raise Exception(f"输入不合法, 请不要输入0或者负数")
             else:
