@@ -65,8 +65,8 @@ docker version
 
 > If you are using `Windows/x86_64`, `macos/amd64`, `macos/arm64`, don't worry about that, you can also run images targeted for a different architecture on Docker Desktop.
 ```bash
-docker pull shuyangzhang:kyouka
-docker pull shuyangzhang:khl-voice
+docker pull shuyangzhang/kyouka
+docker pull shuyangzhang/khl-voice
 ```
 
 4. copy the `.env.template` file from this repository or clone this repository, then rename it to `.env`.
@@ -95,11 +95,11 @@ docker run --name kyouka-manager --env-file .env -v /var/run/docker.sock:/var/ru
 
 ### Deploy based on source code
 
-> if you are using `Win10`/`Win11`, I highly recommend you to run these script in WSL2.
+> if you are using `Win10`/`Win11`, I highly recommend you to run these scripts in WSL2.
 
 > [How to Install Linux on Windows with WSL](https://docs.microsoft.com/en-us/windows/wsl/install)
 
-1. same to step 1 of `deploy by docker service`, install docker and check if it is ready. 
+1. same to step 1 of `deploy based on docker service`, install docker and check if it is ready. 
 ```bash
 docker version
 ```
@@ -108,7 +108,7 @@ docker version
 2. pull the [khl-voice image](https://hub.docker.com/r/shuyangzhang/khl-voice)
 
 ```bash
-docker pull shuyangzhang:khl-voice
+docker pull shuyangzhang/khl-voice
 ```
 
 3. make sure you have installed `Python`, and its version >= 3.6
@@ -194,5 +194,5 @@ This project is licensed under the terms of the MIT license.
 ## Community
 If you need help, have any comments and suggestions, or want to develop Kyouka together, feel free to join our official community: https://kaihei.co/oHRMIL
 
-### Credits
+## Credits
 This project is all based on [khl.py](https://github.com/TWT233/khl.py)
