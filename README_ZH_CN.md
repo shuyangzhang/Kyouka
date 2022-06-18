@@ -22,7 +22,7 @@ Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn
   - [Deploy based on docker service](#deploy-based-on-docker-service)
   - [Deploy based on source code](#deploy-based-on-source-code)
 - [Usage](#usage)
-  - [Quick Stark](#quick-start)
+  - [Quick Start](#quick-start)
   - [Commands](#commands)
 - [Development](#development)
   - [Contributing](#contributing)
@@ -65,8 +65,8 @@ docker version
 
 > If you are using `Windows/x86_64`, `macos/amd64`, `macos/arm64`, don't worry about that, you can also run images targeted for a different architecture on Docker Desktop.
 ```bash
-docker pull shuyangzhang:kyouka
-docker pull shuyangzhang:khl-voice
+docker pull shuyangzhang/kyouka
+docker pull shuyangzhang/khl-voice
 ```
 
 4. copy the `.env.template` file from this repository or clone this repository, then rename it to `.env`.
@@ -77,12 +77,22 @@ mv .env.template .env
 ```
 
 5. configure the `.env` file.
+> WARN: Do not insert any useless characters (including spaces, comments) at the end of the lines of configuration items, otherwise it will cause json parsing failure.
 ```bash
-TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==      # your bot token
-CHANNEL=2559449076697969                       # default voice channel
-CONTAINER_NAME=kyouka-runner                   # the name of khl-voice sdk container, it should be different with your manager(bot) container name
-ADMIN_USERS=["693543263"]                      # the admin user id list
-FILE_LOGGER=false                              # the file_logger switch
+# your bot token
+TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==
+
+# default voice channel
+CHANNEL=2559449076697969
+
+# the name of khl-voice sdk container, it should be different with your manager(bot) container name
+CONTAINER_NAME=kyouka-runner
+
+# the admin user id list
+ADMIN_USERS=["693543263"]
+
+# the file_logger switch
+FILE_LOGGER=false
 ```
 
 6. create container for Kyouka bot.
@@ -95,11 +105,11 @@ docker run --name kyouka-manager --env-file .env -v /var/run/docker.sock:/var/ru
 
 ### Deploy based on source code
 
-> if you are using `Win10`/`Win11`, I highly recommend you to run these script in WSL2.
+> if you are using `Win10`/`Win11`, I highly recommend you to run these scripts in WSL2.
 
 > [How to Install Linux on Windows with WSL](https://docs.microsoft.com/en-us/windows/wsl/install)
 
-1. same to step 1 of `deploy by docker service`, install docker and check if it is ready. 
+1. same to step 1 of `deploy based on docker service`, install docker and check if it is ready. 
 ```bash
 docker version
 ```
@@ -108,7 +118,7 @@ docker version
 2. pull the [khl-voice image](https://hub.docker.com/r/shuyangzhang/khl-voice)
 
 ```bash
-docker pull shuyangzhang:khl-voice
+docker pull shuyangzhang/khl-voice
 ```
 
 3. make sure you have installed `Python`, and its version >= 3.6
@@ -127,12 +137,22 @@ mv .env.template .env
 ```
 
 5. configure the `.env` file.
+> WARN: Do not insert any useless characters (including spaces, comments) at the end of the lines of configuration items, otherwise it will cause json parsing failure.
 ```bash
-TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==      # your bot token
-CHANNEL=2559449076697969                       # default voice channel
-CONTAINER_NAME=kyouka-runner                   # the name of khl-voice sdk container, it should be different with your manager(bot) container name
-ADMIN_USERS=["693543263"]                      # the admin user id list
-FILE_LOGGER=false                              # the file_logger switch
+# your bot token
+TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==
+
+# default voice channel
+CHANNEL=2559449076697969
+
+# the name of khl-voice sdk container, it should be different with your manager(bot) container name
+CONTAINER_NAME=kyouka-runner
+
+# the admin user id list
+ADMIN_USERS=["693543263"]
+
+# the file_logger switch
+FILE_LOGGER=false
 ```
 
 6. install python dependencies.
@@ -194,5 +214,5 @@ This project is licensed under the terms of the MIT license.
 ## Community
 If you need help, have any comments and suggestions, or want to develop Kyouka together, feel free to join our official community: https://kaihei.co/oHRMIL
 
-### Credits
+## Credits
 This project is all based on [khl.py](https://github.com/TWT233/khl.py)
