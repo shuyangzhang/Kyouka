@@ -22,7 +22,7 @@ Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn
   - [Deploy based on docker service](#deploy-based-on-docker-service)
   - [Deploy based on source code](#deploy-based-on-source-code)
 - [Usage](#usage)
-  - [Quick Stark](#quick-start)
+  - [Quick Start](#quick-start)
   - [Commands](#commands)
 - [Development](#development)
   - [Contributing](#contributing)
@@ -77,12 +77,22 @@ mv .env.template .env
 ```
 
 5. configure the `.env` file.
+> WARN: Do not insert any useless characters (including spaces, comments) at the end of the lines of configuration items, otherwise it will cause json parsing failure.
 ```bash
-TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==      # your bot token
-CHANNEL=2559449076697969                       # default voice channel
-CONTAINER_NAME=kyouka-runner                   # the name of khl-voice sdk container, it should be different with your manager(bot) container name
-ADMIN_USERS=["693543263"]                      # the admin user id list
-FILE_LOGGER=false                              # the file_logger switch
+# your bot token
+TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==
+
+# default voice channel
+CHANNEL=2559449076697969
+
+# the name of khl-voice sdk container, it should be different with your manager(bot) container name
+CONTAINER_NAME=kyouka-runner
+
+# the admin user id list
+ADMIN_USERS=["693543263"]
+
+# the file_logger switch
+FILE_LOGGER=false
 ```
 
 6. create container for Kyouka bot.
@@ -127,12 +137,22 @@ mv .env.template .env
 ```
 
 5. configure the `.env` file.
+> WARN: Do not insert any useless characters (including spaces, comments) at the end of the lines of configuration items, otherwise it will cause json parsing failure.
 ```bash
-TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==      # your bot token
-CHANNEL=2559449076697969                       # default voice channel
-CONTAINER_NAME=kyouka-runner                   # the name of khl-voice sdk container, it should be different with your manager(bot) container name
-ADMIN_USERS=["693543263"]                      # the admin user id list
-FILE_LOGGER=false                              # the file_logger switch
+# your bot token
+TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==
+
+# default voice channel
+CHANNEL=2559449076697969
+
+# the name of khl-voice sdk container, it should be different with your manager(bot) container name
+CONTAINER_NAME=kyouka-runner
+
+# the admin user id list
+ADMIN_USERS=["693543263"]
+
+# the file_logger switch
+FILE_LOGGER=false
 ```
 
 6. install python dependencies.
