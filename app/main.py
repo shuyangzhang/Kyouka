@@ -103,7 +103,7 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
         if matched_obj:
             playlist_id = matched_obj.groups()[0]
         else:
-            raise Exception("输入格式有误。\n正确格式为: /import {playlist_id} 或 /导入 {playlist_name}")
+            raise Exception("输入格式有误。\n正确格式为: /import {playlist_url} 或 /导入 {playlist_url}")
         result = await fetch_music_list_by_id(playlist_id=playlist_id)
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
