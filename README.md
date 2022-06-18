@@ -12,7 +12,7 @@ Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn
 
 ## Multilingual README
 
-[English](./README.md) | [中文](./README_ZH_CN.md)
+English | [中文](./README_ZH_CN.md)
 
 ## Contents
 

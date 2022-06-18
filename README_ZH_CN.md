@@ -12,207 +12,207 @@ Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn
 
 ## Multilingual README
 
-[English](./README.md) | [中文](./README_ZH_CN.md)
+[English](./README.md) | 中文
 
 ## Contents
 
-- [Features](#features)
-- [Dependencies](#dependencies)
-- [Installation and Deployment](#installation-and-deployment)
-  - [Deploy based on docker service](#deploy-based-on-docker-service)
-  - [Deploy based on source code](#deploy-based-on-source-code)
-- [Usage](#usage)
-  - [Quick Start](#quick-start)
-  - [Commands](#commands)
-- [Development](#development)
-  - [Contributing](#contributing)
-  - [License](#license)
-- [Community](#community)
-- [Credits](#credits)
+- [特性](#特性)
+- [依赖](#依赖)
+- [安装与部署](#安装与部署)
+  - [基于docker部署](#基于docker部署)
+  - [基于源码部署](#基于源码部署)
+- [使用指南](#使用指南)
+  - [快速上手](#快速上手)
+  - [操作指令](#操作指令)
+- [开发](#开发)
+  - [贡献源码](#贡献源码)
+  - [许可协议](#许可协议)
+- [社区](#社区)
+- [致谢](#致谢)
 
-## Features
+## 特性
 
-+ Multi platform
-+ All async
-+ Container as a service
++ 多平台/多架构支持
++ 全异步设计
++ 容器化服务
 
-## Dependencies
+## 依赖
 
-+ Docker, whether you are deploying based on docker or binaries.
-+ Python >= 3.6, if you wanna to deploy it based on source code.
++ Docker, 无论你基于docker部署还是基于源码部署都需要
++ Python >= 3.6, 如果你基于源码部署
 
-## Installation and Deployment
+## 安装与部署
 
-### Deploy based on docker service
+### 基于docker部署
 
-I highly recommend you to deploy based on docker because it is easy to configure.
+我强烈建议你选择基于docker部署, 因为它的配置方法很简单
 
-1. if you havn't install docker, please follow these instructions.
+1. 如果你还没有安装docker, 请根据你的操作系统参照以下指引进行安装
 
-- [Install Docker Desktop on Windows](https://docs.docker.com/desktop/windows/install/)
-- [Install Docker Desktop on Mac](https://docs.docker.com/desktop/mac/install/)
-- [Install Docker Desktop on Linux](https://docs.docker.com/desktop/linux/install/)
+- [如何在Windows上安装Docker Destktop](https://docs.docker.com/desktop/windows/install/)
+- [如何在MacOS上安装Docker Desktop](https://docs.docker.com/desktop/mac/install/)
+- [如何在Linux上安装Docker Desktop](https://docs.docker.com/desktop/linux/install/)
 
-2. check if your docker is ready.
+2. 确认你的docker是否已经就绪
 
 ```bash
 docker version
 ```
 
-3. pull the [Kyouka bot image](https://hub.docker.com/r/shuyangzhang/kyouka) and [khl-voice image](https://hub.docker.com/r/shuyangzhang/khl-voice).
-> Kyouka bot image provides multi-architecture support for `linux/amd64` and `linux/arm64`.  
-> khl-voice image only support for `linux/amd64` arch.  
+3. 拉取[Kyouka 镜华 点歌机器人 镜像](https://hub.docker.com/r/shuyangzhang/kyouka) 和 [khl-voice SDK 镜像](https://hub.docker.com/r/shuyangzhang/khl-voice).
+> Kyouka 镜华 点歌机器人 镜像提供 `linux/amd64` 和 `linux/arm64`的多平台支持  
+> khl-voice SDK 镜像仅支持 `linux/amd64` 架构  
 
-> If you are using `Windows/x86_64`, `macos/amd64`, `macos/arm64`, don't worry about that, you can also run images targeted for a different architecture on Docker Desktop.
+> 如果你的设备的架构是 `Windows/x86_64`, `macos/amd64`, `macos/arm64`, 请不要担心, 你可以在Docker Desktop上跨平台/跨架构运行这些镜像的容器.
 ```bash
 docker pull shuyangzhang/kyouka
 docker pull shuyangzhang/khl-voice
 ```
 
-4. copy the `.env.template` file from this repository or clone this repository, then rename it to `.env`.
+4. 从此代码仓库复制文件: `.env.template` 或克隆此代码仓库, 然后把它重命名为 `.env`.
 ```bash
 git clone git@github.com:shuyangzhang/Kyouka.git
 cd Kyouka
 mv .env.template .env
 ```
 
-5. configure the `.env` file.
-> WARN: Do not insert any useless characters (including spaces, comments) at the end of the lines of configuration items, otherwise it will cause json parsing failure.
+5. 配置 `.env` 文件.
+> 警告: 不要在配置项所在的行末添加任何无用的字符(包括但不限于 空格, 注释), 否则会导致Json解析失败
 ```bash
-# your bot token
+# 你的机器人的 token
 TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==
 
-# default voice channel
+# 默认绑定的语音频道ID
 CHANNEL=2559449076697969
 
-# the name of khl-voice sdk container, it should be different with your manager(bot) container name
+# khl-voice sdk 镜像所生成的容器名, 此名称必须与Kyouka 镜华 点歌机器人 镜像生成的容器名不同
 CONTAINER_NAME=kyouka-runner
 
-# the admin user id list
+# 管理员ID
 ADMIN_USERS=["693543263"]
 
-# the file_logger switch
+# 是否将日志保存到文件
 FILE_LOGGER=false
 ```
 
-6. create container for Kyouka bot.
+6. 创建Kyouka 镜华 点歌机器人 镜像的容器
 ```bash
 docker run --name kyouka-manager --env-file .env -v /var/run/docker.sock:/var/run/docker.sock --restart always -d shuyangzhang/kyouka
 ```
 
-7. now the bot in running, send a `/ping` command in your channel, if Kyouka reply you, that means your deployment is completed, enjoy!
-> WARN: make sure that you have granted your bot read & send permissions.
+7. 此时你的机器人已开始运行, 在你的频道中发送 `/ping` 命令, 如果 Kyouka 镜华回复你消息了, 那么代表你的部署已经完成! 请尽情享用
+> 警告: 请提前确定你已经授予了你的机器人阅读和发送消息的权限
 
-### Deploy based on source code
+### 基于源码部署
 
-> if you are using `Win10`/`Win11`, I highly recommend you to run these scripts in WSL2.
+> 如果你正在使用 `Win10`/`Win11`, 我强烈建议在 WSL2 中执行以下的操作指令
 
-> [How to Install Linux on Windows with WSL](https://docs.microsoft.com/en-us/windows/wsl/install)
+> [如何在 Windows 上安装 WSL](https://docs.microsoft.com/en-us/windows/wsl/install)
 
-1. same to step 1 of `deploy based on docker service`, install docker and check if it is ready. 
+1. 与 `基于docker部署` 的第一步相同, 安装docker并确认它是否已就绪 
 ```bash
 docker version
 ```
-> make sure that you can run `docker` command without `sudo`. seeing [Manage Docker as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+> 请确定你可以执行 `docker` 命令而无需使用 `sudo`. 参考 [使用非root用户管理docker](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
 
-2. pull the [khl-voice image](https://hub.docker.com/r/shuyangzhang/khl-voice)
+2. 拉取 [khl-voice SDK 镜像](https://hub.docker.com/r/shuyangzhang/khl-voice)
 
 ```bash
 docker pull shuyangzhang/khl-voice
 ```
 
-3. make sure you have installed `Python`, and its version >= 3.6
+3. 确认你的系统已安装 Python , 并且它的版本大于等于3.6
 
-> [Download Python for your os](https://www.python.org/downloads/)
+> [为你的操作系统安装 Python](https://www.python.org/downloads/)
 
 ```bash
 python -V
 ```
 
-4. clone this repository, then rename `.env.template` file to `.env`.
+4. 克隆此代码仓库, 然后将文件 `.env.template` 重命名为 `.env`
 ```bash
 git clone git@github.com:shuyangzhang/Kyouka.git
 cd Kyouka
 mv .env.template .env
 ```
 
-5. configure the `.env` file.
-> WARN: Do not insert any useless characters (including spaces, comments) at the end of the lines of configuration items, otherwise it will cause json parsing failure.
+5. 配置 `.env` 文件
+> 警告: 不要在配置项所在的行末添加任何无用的字符(包括但不限于 空格, 注释), 否则会导致Json解析失败
 ```bash
-# your bot token
+# 你的机器人的 token
 TOKEN=1/MECxOTk=/zCX2VjWr6p+AmD84jL9asQ==
 
-# default voice channel
+# 默认绑定的语音频道ID
 CHANNEL=2559449076697969
 
-# the name of khl-voice sdk container, it should be different with your manager(bot) container name
+# khl-voice sdk 镜像所生成的容器名, 此名称必须与Kyouka 镜华 点歌机器人 镜像生成的容器名不同
 CONTAINER_NAME=kyouka-runner
 
-# the admin user id list
+# 管理员ID
 ADMIN_USERS=["693543263"]
 
-# the file_logger switch
+# 是否将日志保存到文件
 FILE_LOGGER=false
 ```
 
-6. install python dependencies.
+6. 安装 Python 的依赖
 
 ```bash
-# install vritualenv and initialize a venv for your bot
+# 安装 virtualenv, 然后生成 venv 虚拟环境用于安装 Kyouka 镜华 点歌机器人 的依赖
 pip install virtualenv -i https://pypi.tuna.tsinghua.edu.cn/simple
 virtualenv venv
 
-# activate venv
+# 激活 venv 虚拟环境
 source venv/bin/activate
 
-# install dependencies
+# 安装依赖
 pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
-7. run the Kyouka bot.
+7. 启动 Kyouka 镜华 点歌机器人
 ```bash
 python startup.py
 ```
 
-8. now the bot in running, send a `/ping` command in your channel, if Kyouka reply you, that means your deployment is completed, enjoy!
-> WARN: make sure that you have granted your bot read & send permissions.
+8. 此时你的机器人已开始运行, 在你的频道中发送 `/ping` 命令, 如果 Kyouka 镜华回复你消息了, 那么代表你的部署已经完成! 请尽情享用
+> 警告: 请提前确定你已经授予了你的机器人阅读和发送消息的权限
 
-## Usage
+## 使用指南
 
-### Quick Start
+### 快速上手
 
-send a `/help` command in you channel, Kyouka will teach you how to use.
+在你的频道发送 `/help` 命令, Kyouka 镜华 会教你如何使用
 
-### Commands
+### 操作指令
 
-- `/ping`: check whether Kyouka is alive.
-- `/help`: get usage from Kyouka.
-- `/debug`: (only for admin) the debug switch.
-- `/comehere`: bind the voice channel you are in.
-- `/channel {channel_id}`: bind the voice channel with id.
-- `/play {music_name}`: add a music to play list.
-- `/search {keyword}`: search music by keyword.
-- `/select {search_list_id}`: select a music from search result, then add it to play list.
-- `/bilibili {bilibili_video_url}`: add a video from Bilibili to play list.
-- `/list`: check the play list.
-- `/cut`: play the next music in play list.
-- `/import {playlist_url}`: import a netease cloud music play list to Kyouka.
-- `/remove {list_id}`: remove a music from play list.
-- `/top {list_id}`: place a music at the top of play list.
+- `/ping`: 检测 Kyouka 镜华 的在线状态
+- `/help`: 获取帮助文档
+- `/debug`: (需要管理员权限) debug开关
+- `/comehere`: 绑定你所在的语音频道
+- `/channel {channel_id}`: 通过语音频道的ID进行绑定
+- `/play {music_name}`: 点歌
+- `/search {keyword}`: 搜索歌曲
+- `/select {search_list_id}`: 将搜索结果中的歌曲加入播放列表
+- `/bilibili {bilibili_video_url}`: 点播B站视频
+- `/list`: 查看播放列表
+- `/cut`: 切歌
+- `/import {playlist_url}`: 导入网易云音乐歌单(前10首歌曲)
+- `/remove {list_id}`: 删除播放列表中的歌曲
+- `/top {list_id}`: 将播放列表中的歌曲置顶
 
-## Development
-### Contributing
-- using the issue tracker  
-Use the issue tracker to suggest feature requests, report bugs, and ask questions. This is also a great way to connect with the developers of the project as well as others who are interested in this solution.
+## 开发
+### 贡献源码
+- 使用 issue 进行记录  
+通过创建 issue 来提出新功能请求, 反馈 BUG 或提出问题, 这也是与此项目开发者以及其他对该问题感兴趣的人建立联系的一个好方法
 
-- changing the code base  
-Generally speaking, you should fork this repository, make changes in your own fork, and then submit a pull request. All commit messages should satisfy [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.4/)
+- 更换代码工作区  
+通俗地说，你应该 fork 这个仓库，在你自己 fork 的仓库中进行修改，然后提交一个PR, 并且所有的 commit message 应该满足 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.4/)
 
-### License
-This project is licensed under the terms of the MIT license.
+### 许可协议
+本项目是根据 MIT 许可协议的条款进行授权的
 
-## Community
-If you need help, have any comments and suggestions, or want to develop Kyouka together, feel free to join our official community: https://kaihei.co/oHRMIL
+## 社区
+如果你需要帮助, 有任何意见和建议, 或者想一起开发 Kyouka 镜华, 欢迎加入我们的官方社区: https://kaihei.co/oHRMIL
 
-## Credits
-This project is all based on [khl.py](https://github.com/TWT233/khl.py)
+## 致谢
+本项目是基于 [khl.py](https://github.com/TWT233/khl.py) 进行开发的
