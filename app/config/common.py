@@ -15,6 +15,11 @@ class CommonSettings(BaseSettings):
     channel: str = ""
     container_name: str = ""
 
+    bot_name: str = "镜华 Kyouka"
+
+    kanban: bool = False
+    kanban_channel: str = ""
+
     re_prefix_switch: bool = False
     re_prefix_enable: bool = True
     re_prefix_inbegin: bool = True

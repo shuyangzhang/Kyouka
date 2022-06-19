@@ -12,12 +12,12 @@ from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator as log
-from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive
+from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info
 
 import app.CardStorage as CS
 
 
-__version__ = "0.4.4"
+__version__ = "0.5.0"
 
 # logger
 if settings.file_logger:
@@ -322,6 +322,9 @@ async def ten_seconds_interval_tasks():
 async def one_minutes_interval_tasks():
     await keep_bproxy_alive()
 
+@bot.task.add_interval(seconds=10)
+async def five_minutes_interval_tasks():
+    await update_kanban_info(bot=bot)
 
 # buttons reflection event, WIP
 from khl import Event,EventTypes

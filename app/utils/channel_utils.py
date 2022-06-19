@@ -1,4 +1,4 @@
-from khl import Bot 
+from khl import Bot, Message
 
 
 async def get_joined_voice_channel_id(bot: Bot, guild_id: str, user_id: str) -> str: 
@@ -11,3 +11,21 @@ async def get_joined_voice_channel_id(bot: Bot, guild_id: str, user_id: str) -> 
     else:
         channel_id = ""
     return channel_id
+
+async def update_channel_name_by_message(msg: Message, channel_id: str, new_name: str):
+    method = "POST"
+    route = "channel/update"
+    json = {
+        "channel_id": channel_id,
+        "name": new_name,
+    }
+    await msg.ctx.gate.request(method=method, route=route, json=json)    
+
+async def update_channel_name_by_bot(bot: Bot, channel_id: str, new_name: str):
+    method = "POST"
+    route = "channel/update"
+    json = {
+        "channel_id": channel_id,
+        "name": new_name,
+    }
+    await bot.client.gate.request(method=method, route=route, json=json)    

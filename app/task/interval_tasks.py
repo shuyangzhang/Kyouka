@@ -3,7 +3,9 @@ import traceback
 import aiohttp
 
 from loguru import logger
+from khl import Bot
 from app.config.common import settings
+from app.utils.channel_utils import update_channel_name_by_bot
 from app.voice_utils.container_handler import create_container, stop_container
 from app.music.bilibili.search import BPROXY_API
 
@@ -100,3 +102,12 @@ async def keep_bproxy_alive():
         logger.error(f"bproxy is not available, error msg: {e}, traceback: {traceback.format_exc()}")
         logger.error("bproxy is not alive now")
 
+async def update_kanban_info(bot: Bot):
+    try:
+        if settings.kanban:
+            status = "空闲" if len(settings.playqueue) == 0 else "繁忙"
+            kanban_info = f"{settings.bot_name}: {status}"
+            await update_channel_name_by_bot(bot=bot, channel_id=settings.kanban_channel, new_name=kanban_info)
+            logger.info(f"kanban info is updated to {kanban_info} successfully")
+    except Exception as e:
+        logger.error(f"failed to update the kanban info, error msg: {e}, traceback: {traceback.format_exc()}")
