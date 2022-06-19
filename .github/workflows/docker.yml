@@ -26,7 +26,6 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - 
         name: Set TAG_NAME to env
-        uses: actions/checkout@v2
         run: echo "TAG_NAME=${GITHUB_REF##*v}" >> $GITHUB_ENV
       -
         name: Build and push
