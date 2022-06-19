@@ -20,6 +20,9 @@ class CommonSettings(BaseSettings):
     kanban: bool = False
     kanban_channel: str = ""
 
+    warned_user_list: List[str] = []
+    banned_user_list: List[str] = []
+
     re_prefix_switch: bool = False
     re_prefix_enable: bool = True
     re_prefix_inbegin: bool = True

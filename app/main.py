@@ -1,3 +1,4 @@
+from calendar import c
 from nis import match
 import re
 import datetime
@@ -11,7 +12,9 @@ from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
-from app.utils.log_utils import loguru_decorator as log
+from app.utils.log_utils import loguru_decorator_factory as log
+from app.utils.permission_utils import warn_decorator as warn
+from app.utils.permission_utils import ban_decorator as ban
 from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info
 
 import app.CardStorage as CS
@@ -27,23 +30,23 @@ bot = Bot(token=settings.token)
 
 
 @bot.command(name="ping")
-@log
+@log(command="ping")
 async def ping(msg: Message):
     await msg.channel.send("コスモブルーフラッシュ！")
     logger.success(f"log_id: {msg.ctx.log_id} recieved")
 
 @bot.command(name="version")
-@log
+@log(command="version")
 async def version(msg: Message):
     await msg.channel.send(f"Version number: {__version__}")
 
 @bot.command(name="help", aliases=["帮助", "文档", "手册", "说明", "示例", "命令", "?", "？"])
-@log
+@log(command="help")
 async def help(msg: Message):
     await msg.channel.send(CardMessage(CS.HelpCard()))
 
 @bot.command(name="debug")
-@log
+@log(command="debug")
 async def debug(msg: Message):
     if msg.author.id in settings.admin_users:
         settings.debug = not settings.debug
@@ -55,7 +58,9 @@ async def debug(msg: Message):
         await msg.channel.send("permission denied")
 
 @bot.command(name="channel", aliases=["频道", "语音频道"])
-@log
+@log(command="channel")
+@ban
+@warn
 async def update_voice_channel(msg: Message, channel_id: str=""):
     if not channel_id:
         raise Exception("输入格式有误。\n正确格式为: /channel {channel_id} 或 /频道 {channel_id}")
@@ -64,7 +69,9 @@ async def update_voice_channel(msg: Message, channel_id: str=""):
         await msg.channel.send(f"语音频道更新为: {settings.channel}")
 
 @bot.command(name="comehere", aliases=["来", "来我频道", "come"])
-@log
+@log(command="comehere")
+@ban
+@warn
 async def come_to_my_voice_channel(msg: Message):
     guild_id = msg.ctx.guild.id
     author_id = msg.author.id
@@ -79,7 +86,9 @@ async def come_to_my_voice_channel(msg: Message):
     await bot.command.get("channel").handler(msg, author_voice_channel_id)
 
 @bot.command(name="play", aliases=["点歌"])
-@log
+@log(command="play")
+@ban
+@warn
 async def play_music(msg: Message, *args):
     music_name = " ".join(args)
     if not music_name:
@@ -93,7 +102,9 @@ async def play_music(msg: Message, *args):
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
 
 @bot.command(name='import', aliases=["导入", "导入歌单"])
-@log
+@log(command="import")
+@ban
+@warn
 async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
         raise Exception("输入格式有误。\n正确格式为: /import {playlist_url} 或 /导入 {playlist_url}")
@@ -113,7 +124,9 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
    
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
-@log
+@log(command="bilibili")
+@ban
+@warn
 async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
     if not bilibili_url:
         raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
@@ -132,7 +145,9 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
             await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
 
 @bot.command(name="search", aliases=["搜索", "搜"])
-@log
+@log(command="search")
+@ban
+@warn
 async def search_music(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
@@ -162,7 +177,9 @@ async def search_music(msg: Message, *args):
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name="select", aliases=["pick", "选择", "选"])
-@log
+@log(command="select")
+@ban
+@warn
 async def select_candidate(msg: Message, candidate_num: str=""):
     candidate_num = int(candidate_num)
     if not candidate_num:
@@ -185,7 +202,7 @@ async def select_candidate(msg: Message, candidate_num: str=""):
                 await msg.channel.send(f"已将 {selected_music[0]}-{selected_music[1]} 添加到播放列表")
 
 @bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
-@log
+@log(command="list")
 async def play_list(msg: Message):
     play_list = list(settings.playqueue)
     if not play_list:
@@ -208,7 +225,9 @@ async def play_list(msg: Message):
             raise e
     
 @bot.command(name="cut", aliases=["next", "切歌", "下一首", "切"])
-@log
+@log(command="cut")
+@ban
+@warn
 async def cut_music(msg: Message):
     play_list = list(settings.playqueue)
     if not play_list:
@@ -236,7 +255,9 @@ async def cut_music(msg: Message):
             settings.played = 5000
 
 @bot.command(name="remove", aliases=["rm", "删除", "删"])
-@log
+@log(command="remove")
+@ban
+@warn
 async def remove_music_in_play_list(msg: Message, music_number: str=""):
     music_number = int(music_number)
     if not music_number:
@@ -259,7 +280,9 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
                 await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
 
 @bot.command(name="top", aliases=["置顶", "顶"])
-@log
+@log(command="top")
+@ban
+@warn
 async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
     music_number = int(music_number)
     if not music_number:
@@ -283,12 +306,16 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
                 await msg.channel.send(f"已将歌曲 {to_top_music[0]}-{to_top_music[1]} 在播放列表中置顶")
 
 @bot.command(name="pause", aliases=["暂停"])
-@log
+@log(command="pause")
+@ban
+@warn
 async def pause(msg: Message):
     await pause_container(settings.container_name)
 
 @bot.command(name="unpause", aliases=["取消暂停", "继续"])
-@log
+@log(command="unpause")
+@ban
+@warn
 async def unpause(msg: Message):
     await unpause_container(settings.container_name)
 
@@ -299,8 +326,54 @@ async def stop_music(msg: Message):
     await stop_container(settings.container_name)
 """
 
+@bot.command(name="warn")
+@log(command="warn")
+async def operate_warned_user_list(msg: Message, action: str="", user_id: str=""):
+    if msg.author.id in settings.admin_users:
+        if action not in ["add", "remove", "list", "rm", "ls"]:
+            raise Exception(f"unknown action: {action}")
+        if not user_id and action not in ["list", "ls"]:
+            raise Exception("missing user id")
+        if action in ["add"]:
+            settings.warned_user_list.append(user_id)
+            await msg.channel.send(f"user: {user_id} has been added to warned user list")
+        if action in ["remove", "rm"]:
+            if user_id not in settings.warned_user_list:
+                raise Exception(f"user: {user_id} is not in warned user list")
+            else:
+                settings.warned_user_list.remove(user_id)
+                await msg.channel.send(f"user {user_id} has been removed from warned user list")
+        if action in ["list", "ls"]:
+            await msg.channel.send(f"current warned user list is {settings.warned_user_list}")
+
+    else:
+        await msg.channel.send("permission denied")
+
+@bot.command(name="ban")
+@log(command="ban")
+async def operate_banned_user_list(msg: Message, action: str="", user_id: str=""):
+    if msg.author.id in settings.admin_users:
+        if action not in ["add", "remove", "list", "rm", "ls"]:
+            raise Exception(f"unknown action: {action}")
+        if not user_id and action not in ["list", "ls"]:
+            raise Exception("missing user id")
+        if action in ["add"]:
+            settings.banned_user_list.append(user_id)
+            await msg.channel.send(f"user: {user_id} has been added to banned user list")
+        if action in ["remove", "rm"]:
+            if user_id not in settings.banned_user_list:
+                raise Exception(f"user: {user_id} is not in banned user list")
+            else:
+                settings.banned_user_list.remove(user_id)
+                await msg.channel.send(f"user {user_id} has been removed from banned user list")
+        if action in ["list", "ls"]:
+            await msg.channel.send(f"current banned user list is {settings.banned_user_list}")
+
+    else:
+        await msg.channel.send("permission denied")
+
 @bot.command(name="logout")
-@log
+@log(command="logout")
 async def logout(msg: Message):
     if msg.author.id in settings.admin_users:
         await msg.channel.send("logging out now...")
@@ -322,8 +395,8 @@ async def ten_seconds_interval_tasks():
 async def one_minutes_interval_tasks():
     await keep_bproxy_alive()
 
-@bot.task.add_interval(seconds=10)
-async def five_minutes_interval_tasks():
+@bot.task.add_interval(minutes=3)
+async def three_minutes_interval_tasks():
     await update_kanban_info(bot=bot)
 
 # buttons reflection event, WIP
