@@ -1,8 +1,9 @@
 name: build docker images the push to docker hub
 
 on:
-  label:
-    types: [created]
+  push:
+    tags: 
+      - '*'
 
 jobs:
   docker:
