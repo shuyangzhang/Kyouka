@@ -24,6 +24,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: Set TAG_NAME to env
+        uses: actions/checkout@v2
+        run: echo "TAG_NAME=${GITHUB_REF##*v}" >> $GITHUB_ENV
       -
         name: Build and push
         uses: docker/build-push-action@v3
@@ -31,4 +35,4 @@ jobs:
           context: .
           platforms: linux/amd64, linux/arm64
           push: true
-          tags: shuyangzhang/kyouka:latest, shuyangzhang/kyouka:${{ github.ref_name##*v }}
+          tags: shuyangzhang/kyouka:latest, shuyangzhang/kyouka:${{ env.TAG_NAME }}
