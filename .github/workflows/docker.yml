@@ -31,4 +31,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: shuyangzhang/kyouka:latest, shuyangzhang/kyouka:${GITHUB_REF##*v}
+          tags: shuyangzhang/kyouka:latest,shuyangzhang/kyouka:${GITHUB_REF##*v}
