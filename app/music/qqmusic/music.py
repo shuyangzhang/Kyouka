@@ -43,13 +43,13 @@ async def handle_informations(matched):
         p_url = QQMUSIC_SONG_API+f'{{"req":{{"param": {{"guid": "{guid}"}}}}, "req_0": {{"module": "vkey.GetVkeyServer", "method": "CgiGetVkey", "param": {{"guid": "{guid}", "songmid": ["{songmid}"], "uin": "{uin}"}}}}, "comm": {{"uin": {uin}}}}}'
         response = requests.get(url=p_url)
         m4aUrl = QQMUSIC_SONG_BASICURL+response.json()["req_0"]["data"]["midurlinfo"][0]["purl"]
-        
+
         resp = requests.get(QQMUSIC_SONG_COVER.format(song_info[4][0], song_info[4][1:]))
         if(resp.status_code == 404):
             cover_url = "http://y.qq.com/mediastyle/global/img/album_300.png"
         else:
             cover_url = QQMUSIC_SONG_COVER.format(song_info[4][0], song_info[4][1:])
-        
+
         result.append([song_info[1], song_info[2], m4aUrl, song_info[3], cover_url])
     logger.debug(f"{[result]}")
     return result
