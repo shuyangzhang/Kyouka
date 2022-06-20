@@ -10,6 +10,7 @@ from app.config.common import settings
 from app.music.netease.album import fetch_album_by_id
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
+from app.music.netease.radio import fetch_radio_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
@@ -110,7 +111,7 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
         raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
     else:
-        netease_playlist_pattern = re.compile(r"playlist\?id=(\d+)")
+        netease_playlist_pattern = re.compile(r"playlist(?:\?id=|/)(\d+)")
         matched_obj = netease_playlist_pattern.search(playlist_url)
         if matched_obj:
             playlist_id = matched_obj.groups()[0]
@@ -124,7 +125,6 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
             for this_music in result:
                 settings.playqueue.append(this_music)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
-
 
 @bot.command(name='album', aliases=['专辑', '导入专辑'])
 @log(command='album')
@@ -144,6 +144,25 @@ async def import_music_by_album(msg: Message, album_url: str=''):
         result = await fetch_album_by_id(album_id)
         if not result:
             raise Exception('专辑为空哦，请检查你的输入')
+
+@bot.command(name='radio', aliases=['djradio', '电台', '导入电台'])
+@log(command='radio')
+@ban
+@warn
+async def import_music_by_radio(msg: Message, radio_url: str = ''):
+    if not radio_url:
+        raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
+    else:
+        netease_radio_pattern = re.compile(r'radio\?id=(\d+)')
+        matched_obj = netease_radio_pattern.search(radio_url)
+        if matched_obj:
+            radio_id = matched_obj.groups()[0]
+        else:
+            raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
+        await msg.channel.send("正在逐条导入电台节目，请稍候")
+        result = await fetch_radio_by_id(radio_id=radio_id)
+        if not result:
+            raise Exception('电台为空哦，请检查你的输入')
         else:
             for music in result:
                 settings.playqueue.append(music)
@@ -304,6 +323,21 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
                 removed_music = play_list[music_number - 1]
                 del settings.playqueue[music_number - 1]
                 await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
+
+@bot.command(name='clear', aliases=['清空'])
+@log(command='clear')
+@ban
+@warn
+async def clear_playlist(msg: Message):
+    length = len(settings.playqueue)
+    if not length:
+        raise Exception("播放列表中没有任何歌曲哦")
+    else:
+        await msg.channel.send("正在清空播放列表，请稍候")
+        settings.playqueue.clear()
+        await stop_container(settings.container_name)
+        await msg.channel.send("播放列表已清空")
+        settings.played = 0
 
 @bot.command(name="top", aliases=["置顶", "顶"])
 @log(command="top")

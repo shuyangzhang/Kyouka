@@ -173,7 +173,9 @@ def HelpCard() -> Card:
 `/cut` - 切歌
 `/playlist {playlist_url}` - 导入网易云音乐歌单
 `/album {album_url}` - 导入网易云音乐专辑
+`/radio {radio_url}` - 导入网易云电台
 `/remove {list_id}` - 删除歌单中的歌曲
+`/clear` - 清空歌单
 `/top {list_id}` - 播放列表中的歌曲置顶
 """
                 , type=Types.Text.KMD
