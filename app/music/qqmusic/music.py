@@ -19,14 +19,14 @@ async def get_song_mid(songName):
             continue
         singer_list = song_info.get("singer", ["未知歌手"])
         singers = ""
-        for singer_ in singer_list:
-            singers += singer_["name"] + "&"
+        for singer in singer_list:
+            singers += singer.get("name", "") + "&"
         singers = singers[:-1]
         if(song_info.get("albummid", "") == ""):
-            song_info["albummid"] = '1'+song_info.get("singer", "")[0].get("mid", "")
+            song_info["albummid"] = "1"+song_info.get("singer", [])[0].get("mid", "")
         else:
-            song_info["albummid"] = '2'+song_info.get("albummid", "")
-        matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0)*1000, song_info.get("albummid", "")))
+            song_info["albummid"] = "2"+song_info.get("albummid", "")
+        matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0) * 1000, song_info.get("albummid", "")))
     return matched
 
 async def handle_informations(matched):
