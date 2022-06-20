@@ -41,7 +41,7 @@ async def get_song_mid(songName):
 
 async def handle_informations(matched):
     result = []
-    guid, uin = "8182077584", "2848065047"
+    guid, uin = "0", "0"
     for song_info in matched:
         songmid = song_info[0]
         p_url = QQMUSIC_SONG_API+f'{{"req":{{"param": {{"guid": "{guid}"}}}}, "req_0": {{"module": "vkey.GetVkeyServer", "method": "CgiGetVkey", "param": {{"guid": "{guid}", "songmid": ["{songmid}"], "uin": "{uin}"}}}}, "comm": {{"uin": {uin}}}}}'
