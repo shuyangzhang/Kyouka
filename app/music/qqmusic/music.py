@@ -17,7 +17,7 @@ async def get_song_mid(songName):
     for song_info in song_list:
         if(song_info.get("alterid", 1) == 0):
             continue
-        singer_list = song_info.get("singer", ["未知歌手"])
+        singer_list = song_info.get("singer", [{"name": "未知歌手"}])
         singers = ""
         for singer in singer_list:
             singers += singer.get("name", "") + "&"
