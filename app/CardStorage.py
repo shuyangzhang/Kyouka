@@ -171,7 +171,8 @@ def HelpCard() -> Card:
 `/bilibili {bili_video_url}` - 点播B站视频 [实验功能, 暂不稳定]
 `/list` - 查看播放列表
 `/cut` - 切歌
-`/import {playlist_url}` - 导入网易云音乐歌单
+`/playlist {playlist_url}` - 导入网易云音乐歌单
+`/radio {radio_url}` - 导入网易云电台
 `/remove {list_id}` - 删除歌单中的歌曲
 `/top {list_id}` - 播放列表中的歌曲置顶
 """

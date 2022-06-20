@@ -9,6 +9,7 @@ from khl.card import CardMessage
 from app.config.common import settings
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
+from app.music.netease.radio import fetch_radio_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
@@ -101,20 +102,20 @@ async def play_music(msg: Message, *args):
         else:
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
 
-@bot.command(name='import', aliases=["导入", "导入歌单"])
-@log(command="import")
+@bot.command(name='playlist', aliases=["歌单", "导入歌单"])
+@log(command="playlist")
 @ban
 @warn
 async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
-        raise Exception("输入格式有误。\n正确格式为: /import {playlist_url} 或 /导入 {playlist_url}")
+        raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
     else:
         netease_playlist_pattern = re.compile(r"playlist\?id=(\d+)")
         matched_obj = netease_playlist_pattern.search(playlist_url)
         if matched_obj:
             playlist_id = matched_obj.groups()[0]
         else:
-            raise Exception("输入格式有误。\n正确格式为: /import {playlist_url} 或 /导入 {playlist_url}")
+            raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
         result = await fetch_music_list_by_id(playlist_id=playlist_id)
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
@@ -122,7 +123,29 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
             for this_music in result:
                 settings.playqueue.append(this_music)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
-   
+
+@bot.command(name='radio', aliases=['djradio', '电台', '导入电台'])
+@log(command='radio')
+@ban
+@warn
+async def import_music_by_radio(msg: Message, radio_url: str= ''):
+    if not radio_url:
+        raise Exception('输入格式有误。\n正确格式为: /radio {playlist_url} 或 /电台 {playlist_url}')
+    else:
+        netease_radio_pattern = re.compile(r'radio\?id=(\d+)')
+        matched_obj = netease_radio_pattern.search(radio_url)
+        if matched_obj:
+            radio_id = matched_obj.groups()[0]
+        else:
+            raise Exception('输入格式有误。\n正确格式为: /radio {playlist_url} 或 /电台 {playlist_url}')
+        result = await fetch_radio_by_id(radio_id=radio_id)
+        if not result:
+            raise Exception('电台为空哦，请检查你的输入')
+        else:
+            for music in result:
+                settings.playqueue.append(music)
+    await msg.channel.send('导入成功，输入 /list 查看播放列表')
+
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 @log(command="bilibili")
 @ban
