@@ -2,10 +2,6 @@ import requests
 import json
 from loguru import logger
 
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36'
-}
-
 QQMUSIC_SEARCH_API = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&w="
 QQMUSIC_SONG_API = "https://u.y.qq.com/cgi-bin/musicu.fcg?data="
 QQMUSIC_SONG_BASICURL = "http://dl.stream.qqmusic.qq.com/"
@@ -14,7 +10,7 @@ QQMUSIC_SONG_COVER = "http://y.qq.com/music/photo_new/T00{0}R300x300M000{1}.jpg"
 
 async def get_song_mid(songName):
     url = QQMUSIC_SEARCH_API+songName
-    res = requests.get(url=url, headers=headers)
+    res = requests.get(url=url)
     h_dict = json.loads(res.text[9:-1])
     matched = []
     song_list = h_dict["data"]["song"]["list"]
@@ -45,7 +41,7 @@ async def handle_informations(matched):
     for song_info in matched:
         songmid = song_info[0]
         p_url = QQMUSIC_SONG_API+f'{{"req":{{"param": {{"guid": "{guid}"}}}}, "req_0": {{"module": "vkey.GetVkeyServer", "method": "CgiGetVkey", "param": {{"guid": "{guid}", "songmid": ["{songmid}"], "uin": "{uin}"}}}}, "comm": {{"uin": {uin}}}}}'
-        response = requests.get(url=p_url, headers=headers)
+        response = requests.get(url=p_url)
         m4aUrl = QQMUSIC_SONG_BASICURL+response.json()["req_0"]["data"]["midurlinfo"][0]["purl"]
         
         resp = requests.get(QQMUSIC_SONG_COVER.format(song_info[4][0], song_info[4][1:]))
