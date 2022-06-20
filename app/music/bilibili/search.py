@@ -1,6 +1,9 @@
+from typing import Optional
+
 import aiohttp
 from loguru import logger
 
+from app.music.music import Music
 
 BILIBILI_VIDEO_INFO_API = "http://api.bilibili.com/x/web-interface/view"
 BILIBILI_AUDIO_SOURCE_API = "https://api.bilibili.com/x/player/playurl"
@@ -59,19 +62,20 @@ async def fetch_audio_source_by_BVid_and_cid(BVid: str, cid: int):
     logger.debug(f"{[matched, source]}")
     return matched, source
 
-async def bvid_to_music(BVid: str):
+async def bvid_to_music(BVid: str) -> Optional[Music]:
+    ret = None
     matched, name, author, cid, duration = await fetch_basic_video_info_by_BVid(BVid=BVid)
-    if not matched:
-        source = ""
-    else:
+    if matched:
         matched, source = await fetch_audio_source_by_BVid_and_cid(BVid=BVid, cid=cid)
-    
-    logger.debug(f"{[matched, name, author, source, duration]}")
-    return matched, name, author, source, duration
+        ret = Music(name, author, source, duration, '')
 
-async def bvid_to_music_by_bproxy(BVid: str):
+    logger.debug(f'FETCHED: {str(ret)}')
+    return ret
+
+async def bvid_to_music_by_bproxy(BVid: str) -> Optional[Music]:
     url = f"{BPROXY_API}bproxy?bvid={BVid}"
-    
+    ret = None
+
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as r:
             resp_json = await r.json()
@@ -81,21 +85,15 @@ async def bvid_to_music_by_bproxy(BVid: str):
             else:
                 data = resp_json.get("data", {})
                 if data:
-                    matched = True
-                    name = data.get("name", "")
-                    author = data.get("author", "")
-                    source = data.get("source")
-                    duration = data.get("duration", 180000)
-                    cover_image_url = data.get("cover_image_url", "")
-                else:
-                    matched = False
-                    name = ""
-                    author = ""
-                    source = ""
-                    duration = 0
-                    cover_image_url = ""
-    logger.debug(f"{[matched, name, author, source, duration, cover_image_url]}")
-    return matched, name, author, source, duration, cover_image_url
+                    ret = Music(
+                        data.get('name', ''),
+                        data.get('author', ''),
+                        data.get('source'),
+                        data.get('duration', 180000),
+                        data.get('cover_image_url', '')
+                    )
+    logger.debug(f'FETCHED: {str(ret)}')
+    return ret
 
 if __name__ == "__main__":
     import asyncio

@@ -97,10 +97,10 @@ async def play_music(msg: Message, *args):
     if not music_name:
         raise Exception("输入格式有误。\n正确格式为: /play {music_name} 或 /点歌 {music_name}")
     else:
-        matched, name, vocalist, source, duration, cover_image_url = await fetch_music_source_by_name(music_name)
-        if matched:
-            await msg.channel.send(f"已将 {name}-{vocalist} 添加到播放列表")
-            settings.playqueue.append([name, vocalist, source, duration, -1, cover_image_url])
+        music = await fetch_music_source_by_name(music_name)
+        if music:
+            await msg.channel.send(f'已将 {music.name}-{music.author} 添加到播放列表')
+            settings.playqueue.append(music)
         else:
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
 
@@ -123,8 +123,7 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
         else:
-            for this_music in result:
-                settings.playqueue.append(this_music)
+            settings.playqueue.extend(result)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
 
 @bot.command(name='album', aliases=['专辑', '导入专辑'])
@@ -145,6 +144,9 @@ async def import_music_by_album(msg: Message, album_url: str=''):
         result = await fetch_album_by_id(album_id)
         if not result:
             raise Exception('专辑为空哦，请检查你的输入')
+        else:
+            settings.playqueue.extend(result)
+    await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
 @bot.command(name='radio', aliases=['djradio', '电台', '导入电台'])
 @log(command='radio')
@@ -165,8 +167,7 @@ async def import_music_by_radio(msg: Message, radio_url: str = ''):
         if not result:
             raise Exception('电台为空哦，请检查你的输入')
         else:
-            for music in result:
-                settings.playqueue.append(music)
+            settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
@@ -183,10 +184,10 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
             BVid = matched_obj.group()
         else:
             raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
-        matched, name, author, source, duration, cover_image_url = await bvid_to_music_by_bproxy(BVid=BVid)
-        if matched:
-            await msg.channel.send(f"已将 {name}-{author} 添加到播放列表")
-            settings.playqueue.append([name, author, source, duration, -1, cover_image_url])
+        result = await bvid_to_music_by_bproxy(BVid=BVid)
+        if result:
+            await msg.channel.send(f"已将 {result.name}-{result.author} 添加到播放列表")
+            settings.playqueue.append(result)
         else:
             await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
 
@@ -294,7 +295,7 @@ async def cut_music(msg: Message):
             await create_container(settings.token, settings.channel, next_music[2], "false", settings.container_name)
 
             current_music = settings.playqueue.popleft()
-            current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
+            current_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + current_music.duration
             settings.playqueue.appendleft(current_music)
 
             await msg.channel.send(f"正在为您播放 {next_music[0]} - {next_music[1]}")
