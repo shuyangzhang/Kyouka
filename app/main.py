@@ -78,7 +78,7 @@ async def come_to_my_voice_channel(msg: Message):
     author_id = msg.author.id
 
     author_voice_channel_id = await get_joined_voice_channel_id(bot=bot, guild_id=guild_id, user_id=author_id)
-    
+
     if author_voice_channel_id:
         await msg.channel.send(f"你当前所处的语音频道id为: {author_voice_channel_id}")
     else:
@@ -116,6 +116,7 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
             playlist_id = matched_obj.groups()[0]
         else:
             raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
+        await msg.channel.send("正在逐条导入歌单音乐，请稍候")
         result = await fetch_music_list_by_id(playlist_id=playlist_id)
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
@@ -128,16 +129,17 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
 @log(command='radio')
 @ban
 @warn
-async def import_music_by_radio(msg: Message, radio_url: str= ''):
+async def import_music_by_radio(msg: Message, radio_url: str = ''):
     if not radio_url:
-        raise Exception('输入格式有误。\n正确格式为: /radio {playlist_url} 或 /电台 {playlist_url}')
+        raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
     else:
         netease_radio_pattern = re.compile(r'radio\?id=(\d+)')
         matched_obj = netease_radio_pattern.search(radio_url)
         if matched_obj:
             radio_id = matched_obj.groups()[0]
         else:
-            raise Exception('输入格式有误。\n正确格式为: /radio {playlist_url} 或 /电台 {playlist_url}')
+            raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
+        await msg.channel.send("正在逐条导入电台节目，请稍候")
         result = await fetch_radio_by_id(radio_id=radio_id)
         if not result:
             raise Exception('电台为空哦，请检查你的输入')
@@ -246,7 +248,7 @@ async def play_list(msg: Message):
             await msg.channel.send(resp)
         except Exception as e:
             raise e
-    
+
 @bot.command(name="cut", aliases=["next", "切歌", "下一首", "切"])
 @log(command="cut")
 @ban
@@ -431,7 +433,7 @@ async def msg_btn_click(b:Bot,event:Event):
     action, *args = (value.split(":"))
     await channel.send(f"action:{action} arg:{args}")
     # use action to do something
-    
+
     # this function is WIP 
 ##################
 
