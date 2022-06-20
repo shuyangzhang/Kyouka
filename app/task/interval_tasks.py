@@ -12,7 +12,7 @@ from app.music.bilibili.search import BPROXY_API
 
 async def update_played_time_and_change_music():
     logger.debug(f"PLAYED: {settings.played}")
-    logger.debug(f"Q: {settings.playqueue}")
+    logger.debug(f"Q: {[str(music) for music in settings.playqueue]}")
     logger.debug(f"LOCK: {settings.lock}")
 
     if settings.lock:
