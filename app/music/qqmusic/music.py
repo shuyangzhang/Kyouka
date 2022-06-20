@@ -13,26 +13,20 @@ async def get_song_mid(songName):
     res = requests.get(url=url)
     h_dict = json.loads(res.text[9:-1])
     matched = []
-    song_list = h_dict["data"]["song"]["list"]
+    song_list = h_dict.get("data", {}).get("song", {}).get("list", [])
     for song_info in song_list:
-        try:
-            if(song_info["alertid"] == 0):
-                continue
-        except:
-            pass
-        try:
-            singer_list = song_info["singer"]
-        except:
-            singer_list = ["未知歌手"]
+        if(song_info.get("alterid", 1) == 0):
+            continue
+        singer_list = song_info.get("singer", ["未知歌手"])
         singers = ""
         for singer_ in singer_list:
             singers += singer_["name"] + "&"
         singers = singers[:-1]
-        if(song_info["albummid"] == ""):
-            song_info["albummid"] = '1'+song_info["singer"][0]["mid"]
+        if(song_info.get("albummid", "") == ""):
+            song_info["albummid"] = '1'+song_info.get("singer", "")[0].get("mid", "")
         else:
-            song_info["albummid"] = '2'+song_info["albummid"]
-        matched.append((song_info["songmid"], song_info["songname"], singers, song_info["interval"]*1000, song_info["albummid"]))
+            song_info["albummid"] = '2'+song_info.get("albummid", "")
+        matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0)*1000, song_info.get("albummid", "")))
     return matched
 
 async def handle_informations(matched):
@@ -42,7 +36,7 @@ async def handle_informations(matched):
         songmid = song_info[0]
         p_url = QQMUSIC_SONG_API+f'{{"req":{{"param": {{"guid": "{guid}"}}}}, "req_0": {{"module": "vkey.GetVkeyServer", "method": "CgiGetVkey", "param": {{"guid": "{guid}", "songmid": ["{songmid}"], "uin": "{uin}"}}}}, "comm": {{"uin": {uin}}}}}'
         response = requests.get(url=p_url)
-        m4aUrl = QQMUSIC_SONG_BASICURL+response.json()["req_0"]["data"]["midurlinfo"][0]["purl"]
+        m4aUrl = QQMUSIC_SONG_BASICURL+response.json().get("req_0", {}).get("data", {}).get("midurlinfo", [])[0].get("purl", "")
 
         resp = requests.get(QQMUSIC_SONG_COVER.format(song_info[4][0], song_info[4][1:]))
         if(resp.status_code == 404):
