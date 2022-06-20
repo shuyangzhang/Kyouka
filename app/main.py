@@ -109,7 +109,7 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
         raise Exception("输入格式有误。\n正确格式为: /import {playlist_url} 或 /导入 {playlist_url}")
     else:
-        netease_playlist_pattern = re.compile(r"playlist\?id=(\d+)")
+        netease_playlist_pattern = re.compile(r"playlist(?:\?id=|/)(\d+)")
         matched_obj = netease_playlist_pattern.search(playlist_url)
         if matched_obj:
             playlist_id = matched_obj.groups()[0]
