@@ -279,6 +279,21 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
                 del settings.playqueue[music_number - 1]
                 await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
 
+@bot.command(name='clear', aliases=['清空'])
+@log(command='clear')
+@ban
+@warn
+async def clear_playlist(msg: Message):
+    length = len(settings.playqueue)
+    if not length:
+        raise Exception("播放列表中没有任何歌曲哦")
+    else:
+        await msg.channel.send("正在清空播放列表，请稍候")
+        settings.playqueue.clear()
+        await stop_container(settings.container_name)
+        await msg.channel.send("播放列表已清空")
+        settings.played = 0
+
 @bot.command(name="top", aliases=["置顶", "顶"])
 @log(command="top")
 @ban
