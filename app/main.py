@@ -7,6 +7,7 @@ from loguru import logger
 from khl import Message, Bot
 from khl.card import CardMessage
 from app.config.common import settings
+from app.music.netease.album import fetch_album_by_id
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.netease.radio import fetch_radio_by_id
@@ -124,6 +125,25 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
             for this_music in result:
                 settings.playqueue.append(this_music)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
+
+@bot.command(name='album', aliases=['专辑', '导入专辑'])
+@log(command='album')
+@ban
+@warn
+async def import_music_by_album(msg: Message, album_url: str=''):
+    if not album_url:
+        raise Exception('输入格式有误。\n正确格式为: /album {album_url} 或 /电台 {album_url}')
+    else:
+        netease_radio_pattern = re.compile(r'album(?:\?id=|/)(\d+)')
+        matched_obj = netease_radio_pattern.search(album_url)
+        if matched_obj:
+            album_id = matched_obj.groups()[0]
+        else:
+            raise Exception('输入格式有误。\n正确格式为: /album {album_url} 或 /电台 {album_url}')
+        await msg.channel.send("正在逐条导入专辑音乐，请稍候")
+        result = await fetch_album_by_id(album_id)
+        if not result:
+            raise Exception('专辑为空哦，请检查你的输入')
 
 @bot.command(name='radio', aliases=['djradio', '电台', '导入电台'])
 @log(command='radio')

@@ -172,6 +172,7 @@ def HelpCard() -> Card:
 `/list` - 查看播放列表
 `/cut` - 切歌
 `/playlist {playlist_url}` - 导入网易云音乐歌单
+`/album {album_url}` - 导入网易云音乐专辑
 `/radio {radio_url}` - 导入网易云电台
 `/remove {list_id}` - 删除歌单中的歌曲
 `/clear` - 清空歌单
