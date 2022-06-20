@@ -29,7 +29,7 @@ async def get_song_mid(songName: str):
                 else:
                     song_info["albummid"] = "2"+song_info.get("albummid", "")
                 matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0) * 1000, song_info.get("albummid", "")))
-            return matched
+    return matched
 
 async def handle_informations(matched: list):
     result = []
@@ -50,7 +50,7 @@ async def handle_informations(matched: list):
 
             result.append([song_info[1], song_info[2], m4aUrl, song_info[3], cover_url])
 
-    logger.debug(f"{[result]}")
+    logger.debug(f"{result}")
     return result
 
 async def search_song_by_name(songName):
