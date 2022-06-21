@@ -23,7 +23,7 @@ async def osearch_music_by_keyword(music_name: str):
     }
     data = json.dumps(data)
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         async with session.post(SAYO_SEARCH_API, data=data) as req:
             resp_json = await req.json()
             if req.status != 200:
@@ -57,7 +57,7 @@ async def osearch_music_by_keyword(music_name: str):
     return matched, candidates
                   
 async def fetch_music_source_by_sid(sid: int):
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         async with session.get(SAYO_MAPINFO_API, params={'0': sid}) as req:
             # resp_json = await req.json()
             resp_json = json.loads(await req.text())
