@@ -332,15 +332,18 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
 @ban
 @warn
 async def clear_playlist(msg: Message):
-    length = len(settings.playqueue)
-    if not length:
-        raise Exception("播放列表中没有任何歌曲哦")
+    if msg.author.id in settings.admin_users:
+        length = len(settings.playqueue)
+        if not length:
+            raise Exception("播放列表中没有任何歌曲哦")
+        else:
+            await msg.channel.send("正在清空播放列表，请稍候")
+            settings.playqueue.clear()
+            await stop_container(settings.container_name)
+            await msg.channel.send("播放列表已清空")
+            settings.played = 0
     else:
-        await msg.channel.send("正在清空播放列表，请稍候")
-        settings.playqueue.clear()
-        await stop_container(settings.container_name)
-        await msg.channel.send("播放列表已清空")
-        settings.played = 0
+        await msg.channel.send("permission denied")
 
 @bot.command(name="top", aliases=["置顶", "顶"])
 @log(command="top")
