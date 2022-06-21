@@ -1,6 +1,23 @@
 import json
 import aiohttp
 from loguru import logger
+# from app.music.music import Music
+
+class Music:
+    def __init__(self, name: str, author: str, source: str, duration: int, cover_url: str):
+        self.name = name
+        self.author = author
+        self.source = source
+        self.duration = duration
+        self.endtime = -1
+        self.cover_url = cover_url
+
+    def __str__(self):
+        return f'Music({self.name}, {self.author}, {self.source}, {self.duration}, {self.endtime}, {self.cover_url})'
+
+    def __getitem__(self, item):
+        return self.name
+
 
 QQMUSIC_SEARCH_API = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&w="
 QQMUSIC_SONG_API = "https://u.y.qq.com/cgi-bin/musicu.fcg?data="
@@ -48,9 +65,9 @@ async def handle_informations(matched: list):
                 else:
                     cover_url = QQMUSIC_SONG_COVER.format(**kwargs)
 
-            result.append([song_info[1], song_info[2], m4aUrl, song_info[3], cover_url])
+            result.append(Music(song_info[1], song_info[2], m4aUrl, song_info[3], cover_url))
 
-    logger.debug(f"{result}")
+    logger.debug(f"{[str(x) for x in result]}")
     return result
 
 async def search_song_by_name(songName):
