@@ -12,7 +12,7 @@ from app.music.bilibili.search import BPROXY_API
 
 async def update_played_time_and_change_music():
     logger.debug(f"PLAYED: {settings.played}")
-    logger.debug(f"Q: {settings.playqueue}")
+    logger.debug(f"Q: {[str(music) for music in settings.playqueue]}")
     logger.debug(f"LOCK: {settings.lock}")
 
     if settings.lock:
@@ -26,20 +26,19 @@ async def update_played_time_and_change_music():
                 settings.lock = False
                 return None
             else:
-                first_music = list(settings.playqueue)[0]
+                first_music = settings.playqueue[0]
                 if settings.played == 0:
                     await stop_container(settings.container_name)
-                    await create_container(settings.token, settings.channel, first_music[2], "false", settings.container_name)
-                    
-                    current_music = settings.playqueue.popleft()
-                    current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-                    settings.playqueue.appendleft(current_music)
+                    await create_container(settings.token, settings.channel, first_music.source, 'false',
+                                           settings.container_name)
+
+                    first_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + first_music.duration
 
                     settings.played += 5000
                     settings.lock = False
                     return None
                 else:
-                    duration = first_music[3]
+                    duration = first_music.duration
                     if settings.played + 5000 < duration:
                         settings.played += 5000
                         settings.lock = False
@@ -52,13 +51,12 @@ async def update_played_time_and_change_music():
                             settings.lock = False
                             return None
                         else:
-                            next_music = list(settings.playqueue)[0]
+                            next_music = settings.playqueue[0]
                             await stop_container(settings.container_name)
-                            await create_container(settings.token, settings.channel, next_music[2], "false", settings.container_name)
+                            await create_container(settings.token, settings.channel, next_music.source, 'false',
+                                                   settings.container_name)
 
-                            current_music = settings.playqueue.popleft()
-                            current_music[-2] = int(datetime.datetime.now().timestamp() * 1000) + current_music[3]
-                            settings.playqueue.appendleft(current_music)
+                            next_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + next_music.duration
 
                             settings.played = 5000
                             settings.lock = False

@@ -10,15 +10,9 @@ from khl.card.color import Color
 
 ###################### music
 
-from enum import Enum
 from typing import Tuple
-class __MusicListIndex(Enum):
-    MUSIC_NAME = 0
-    MUSIC_AUTHOR = 1
-    MUSIC_URL = 2
-    MUSIC_LENGTH = 3
-    MUSIC_ENDTIME = 4
-    MUSIC_PIC_URL = 5
+
+from app.music.music import Music
 
 __MUSIC_LIST_TILE_COLOR = "#9b59b6"
 __MUSIC_LIST_PLAYING_MUSIC_COLOR = "#a29bfe"
@@ -38,18 +32,18 @@ class InviteModule(_Module):
         }
 
 
-def NowMusicCard(music_list:list) -> Card:
+def NowMusicCard(music_list: list[Music]) -> Card:
     # playing music card
     first_music = music_list[0]
     playing_music_card = Card(theme=Types.Theme.INFO, color=Color(hex=__MUSIC_LIST_PLAYING_MUSIC_COLOR))
     playing_music_card.append(
         Module.Header(f":notes:  当前歌曲")
     )
-    image_url = first_music[__MusicListIndex.MUSIC_PIC_URL.value]
+    image_url = first_music.cover_url
     playing_music_card.append(
         Module.Section(
             Element.Text(
-                f"**  {first_music[__MusicListIndex.MUSIC_NAME.value]}  -  {first_music[__MusicListIndex.MUSIC_AUTHOR.value]}**",
+                f"**  {first_music.name}  -  {first_music.author}**",
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
@@ -59,8 +53,9 @@ def NowMusicCard(music_list:list) -> Card:
         )
     )
 
-    end_time_int = first_music[__MusicListIndex.MUSIC_ENDTIME.value]
-    start_time_int = (end_time_int if end_time_int!=-1 else datetime.datetime.now().timestamp()) - first_music[__MusicListIndex.MUSIC_LENGTH.value]
+    end_time_int = first_music.endtime
+    start_time_int = (end_time_int if end_time_int != -1 else datetime.datetime.now().timestamp()
+                      ) - first_music.duration
     end_time = datetime.datetime.fromtimestamp(end_time_int / 1e3) if end_time_int != -1 else datetime.datetime.now()
     start_time = datetime.datetime.fromtimestamp(start_time_int / 1e3)
     playing_music_card.append(
@@ -87,7 +82,7 @@ def NowMusicCard(music_list:list) -> Card:
     return playing_music_card
 
 
-def MusicListCard(music_list:list) -> Tuple[Card,Card]:
+def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
     """
     返回音乐列表card
     :param music_list:进入数据结构大致为，： music_list[5] = [
@@ -105,11 +100,11 @@ def MusicListCard(music_list:list) -> Tuple[Card,Card]:
         Module.Header(f":star2:  剩余歌曲")
     )
     for index,one_music_des in enumerate( music_list[1:]):
-        image_url = one_music_des[__MusicListIndex.MUSIC_PIC_URL.value]
+        image_url = one_music_des.cover_url
         remaining_list_card.append(
             Module.Section(
                 Element.Text(
-                    f"**    ({index+2})    {one_music_des[__MusicListIndex.MUSIC_NAME.value]} - {one_music_des[__MusicListIndex.MUSIC_AUTHOR.value]}**",
+                    f"**    ({index + 2})    {one_music_des.name} - {one_music_des.author}**",
                     type=Types.Text.KMD
                 ),
                 accessory=Element.Image(

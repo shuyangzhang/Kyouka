@@ -3,6 +3,8 @@ import collections
 from pydantic import BaseSettings
 from typing import List
 
+from app.music.music import Music
+
 
 class CommonSettings(BaseSettings):
     debug: bool = False
@@ -28,7 +30,7 @@ class CommonSettings(BaseSettings):
     re_prefix_inbegin: bool = True
 
     played: int = 0   # ms
-    playqueue: collections.deque = collections.deque()
+    playqueue: collections.deque[Music] = collections.deque()
     lock: bool = False
 
     candidates_map: dict = {}
