@@ -291,9 +291,9 @@ async def cut_music(msg: Message):
             await msg.channel.send("正在切歌，请稍候")
             settings.playqueue.popleft()
             await stop_container(settings.container_name)
-            next_music = list(settings.playqueue)[0]
+            next_music = settings.playqueue[0]
             await stop_container(settings.container_name)
-            await create_container(settings.token, settings.channel, next_music[2], "false", settings.container_name)
+            await create_container(settings.token, settings.channel, next_music.source, "false", settings.container_name)
 
             current_music = settings.playqueue.popleft()
             current_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + current_music.duration
