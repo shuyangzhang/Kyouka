@@ -19,7 +19,7 @@ async def get_song_mid(songName: str):
             matched = []
             song_list = h_dict.get("data", {}).get("song", {}).get("list", [])
             for song_info in song_list:
-                if(song_info.get("alterid", 1) == 0):
+                if(song_info.get("alertid", 1) == 0):
                     continue
                 singer_list = song_info.get("singer", [{"name": "未知歌手"}])
                 singers = ""
