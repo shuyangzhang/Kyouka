@@ -12,6 +12,7 @@ from app.music.netease.search import fetch_music_source_by_name, search_music_by
 from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.netease.radio import fetch_radio_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy
+from app.music.osu.search import osearch_music_by_keyword
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator_factory as log
@@ -364,6 +365,36 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
                 del settings.playqueue[music_number - 1]
                 settings.playqueue.insert(1, to_top_music)
                 await msg.channel.send(f"已将歌曲 {to_top_music[0]}-{to_top_music[1]} 在播放列表中置顶")
+
+
+@bot.command(name='osearch', aliases=['osusearch', 'searchosu', '搜索osu', '搜osu'])
+@log(command="osearch")
+@ban
+@warn
+async def search_osu(msg: Message, *args):
+    keyword = ' '.join(args)
+    if not keyword:
+        raise Exception("格式输入有误。\n正确格式为: /osearch {keyword} 或 /搜osu {keyword}")
+    else:
+        matched, candidates = await osearch_music_by_keyword(music_name=keyword)
+        if matched:
+            author_id = msg.author.id
+            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            candidates_body = {
+                "candidates": candidates,
+                "expire": expire
+            }
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
+
+            select_menu_msg = '已搜索到以下结果' + \
+                '\n'.join(f"{i + 1}. {candidate[0]} - {candidate[1]}" for i, candidate in enumerate(candidates)) + \
+                '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+            await msg.channel.send(select_menu_msg)
+
+        else:
+            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+
 
 @bot.command(name="pause", aliases=["暂停"])
 @log(command="pause")
