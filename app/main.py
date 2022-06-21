@@ -387,8 +387,8 @@ async def search_osu(msg: Message, *args):
             settings.candidates_map.pop(author_id, None)
             settings.candidates_map[author_id] = candidates_body
 
-            select_menu_msg = '已搜索到以下结果' + \
-                '\n'.join(f"{i + 1}. {candidate[0]} - {candidate[1]}" for i, candidate in enumerate(candidates)) + \
+            select_menu_msg = '已搜索到以下结果\n' + \
+                '\n'.join(f"<{i + 1}> {candidate[0]} - {candidate[1]}" for i, candidate in enumerate(candidates)) + \
                 '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
             await msg.channel.send(select_menu_msg)
 
