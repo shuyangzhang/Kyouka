@@ -23,7 +23,7 @@ from app.task.interval_tasks import update_played_time_and_change_music, clear_e
 import app.CardStorage as CS
 
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 # logger
 if settings.file_logger:
@@ -147,6 +147,7 @@ async def import_music_by_album(msg: Message, album_url: str=''):
         else:
             settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
+
 
 @bot.command(name='radio', aliases=['djradio', '电台', '导入电台'])
 @log(command='radio')
