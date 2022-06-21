@@ -2,6 +2,12 @@ import aiohttp
 import json
 from loguru import logger
 
+'''
+osu!是一款免费的音乐游戏 →https://osu.ppy.sh/
+osu!拥有在线排名，多人游戏模式以及自称50万活跃玩家的社区
+xD
+'''
+
 SAYO_SEARCH_API = 'https://api.sayobot.cn/?post'
 SAYO_MAPINFO_API = 'https://api.sayobot.cn/v2/beatmapinfo'
 
@@ -56,7 +62,7 @@ async def fetch_music_source_by_sid(sid: int):
             # resp_json = await req.json()
             resp_json = json.loads(await req.text())
             if req.status != 200:
-                return False
+                return False, None, None
 
             if resp_json['status'] == -1:
                 return False, None, None
