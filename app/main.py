@@ -201,8 +201,8 @@ async def search_music(msg: Message, *args):
     if not keyword:
         raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
     else:
-        matched, candidates = await search_music_by_keyword(music_name=keyword)
-        if matched:
+        candidates = await search_music_by_keyword(music_name=keyword)
+        if candidates:
             # put candidates into global cache first
             author_id = msg.author.id
             expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
@@ -216,7 +216,7 @@ async def search_music(msg: Message, *args):
             # then generate the select menu
             select_menu_msg = "已匹配到如下结果：\n"
             for index, this_item in enumerate(candidates):
-                this_item_str = f"<{index + 1}> {this_item[0]} - {this_item[1]} \n"
+                this_item_str = f"<{index + 1}> {this_item.name} - {this_item.author} \n"
                 select_menu_msg += this_item_str
             select_menu_msg += "\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)"
             await msg.channel.send(select_menu_msg)
@@ -247,7 +247,7 @@ async def select_candidate(msg: Message, candidate_num: str=""):
                 selected_music = candidates[candidate_num - 1]
                 settings.candidates_map.pop(author_id, None)
                 settings.playqueue.append(selected_music)
-                await msg.channel.send(f"已将 {selected_music[0]}-{selected_music[1]} 添加到播放列表")
+                await msg.channel.send(f"已将 {selected_music.name}-{selected_music.author} 添加到播放列表")
 
 @bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
 @log(command="list")
@@ -393,7 +393,7 @@ async def search_osu(msg: Message, *args):
             settings.candidates_map[author_id] = candidates_body
 
             select_menu_msg = '已搜索到以下结果\n' + \
-                '\n'.join(f"<{i + 1}> {candidate[0]} - {candidate[1]}" for i, candidate in enumerate(candidates)) + \
+                '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
                 '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
             await msg.channel.send(select_menu_msg)
 
