@@ -2,6 +2,8 @@ import aiohttp
 import json
 from loguru import logger
 
+from app.music.music import Music
+
 '''
 osu!是一款免费的音乐游戏 →https://osu.ppy.sh/
 osu!拥有在线排名，多人游戏模式以及自称50万活跃玩家的社区
@@ -15,7 +17,7 @@ SAYO_THUMB = 'https://cdn.sayobot.cn:25225/beatmaps/{}/covers/cover.jpg'
 SAYO_AUDIO = 'https://dl.sayobot.cn/beatmaps/files/{0}/{1}'
 
 
-async def osearch_music_by_keyword(music_name: str):
+async def osearch_music_by_keyword(music_name: str) -> list[Music]:
     data = {
         'cmd': 'beatmaplist',
         'keyword': music_name,
@@ -29,16 +31,12 @@ async def osearch_music_by_keyword(music_name: str):
             if req.status != 200:
                 raise Exception('fetch music list failed, api is down')
 
-            if resp_json['status'] == -1:
-                matched = False
-                candidates = []
-            else:
-                matched = True
-                candidates = []
+            candidates = []
+            if resp_json['status'] != -1:
 
                 musiclist = resp_json.get('data', [])
 
-                while musiclist:
+                while musiclist and len(candidates) < 5:
                     music = musiclist.pop(0)
                     name = music['titleU'] if music['titleU'] else music['title']
                     artist = music['artistU'] if music['artistU'] else music['artist']
@@ -48,13 +46,10 @@ async def osearch_music_by_keyword(music_name: str):
                         if audio:
                             source = SAYO_AUDIO.format(sid, audio.replace(' ', '%20'))
                             cover_image_url = SAYO_THUMB.format(sid)
-                            candidates.append([name, artist, source, duration, -1, cover_image_url])
+                            candidates.append(Music(name, artist, source, duration, cover_image_url))
 
-                    if len(candidates) >= 5:
-                        break
-
-    # logger.debug(f'{[candidates]}')
-    return matched, candidates
+    # logger.debug(f'{[str(music) for music in candidates]}')
+    return candidates
                   
 async def fetch_music_source_by_sid(sid: int):
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:

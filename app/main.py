@@ -377,8 +377,8 @@ async def search_osu(msg: Message, *args):
     if not keyword:
         raise Exception("格式输入有误。\n正确格式为: /osearch {keyword} 或 /搜osu {keyword}")
     else:
-        matched, candidates = await osearch_music_by_keyword(music_name=keyword)
-        if matched:
+        candidates = await osearch_music_by_keyword(music_name=keyword)
+        if candidates:
             author_id = msg.author.id
             expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
             candidates_body = {
