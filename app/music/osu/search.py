@@ -63,7 +63,7 @@ async def fetch_music_source_by_sid(sid: int):
                 return False, None, None
             
             musicdata: dict = resp_json.get('data', {}).get('bid_data', [])[0]
-            length = musicdata.get('length', 0)
+            length = musicdata.get('length', 0) * 1000
             audio = musicdata.get('audio', '')
             return True, length, audio
 
