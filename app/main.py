@@ -284,7 +284,7 @@ async def play_list(msg: Message):
         except HTTPRequester.APIRequestFailed:
             resp = ""
             for index, this_music in enumerate(play_list):
-                resp += f"[{index + 1}] {this_music[0]} - {this_music[1]}"
+                resp += f"[{index + 1}] {this_music.name} - {this_music.author}"
                 if index == 0:
                     resp += " <-- 正在播放 -->\n"
                 else:
