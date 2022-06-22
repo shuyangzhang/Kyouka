@@ -1,6 +1,8 @@
 import json
 import aiohttp
 from loguru import logger
+from app.music.music import Music
+
 
 QQMUSIC_SEARCH_API = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&w="
 QQMUSIC_SONG_API = "https://u.y.qq.com/cgi-bin/musicu.fcg?data="
@@ -17,7 +19,7 @@ async def get_song_mid(songName: str):
             matched = []
             song_list = h_dict.get("data", {}).get("song", {}).get("list", [])
             for song_info in song_list:
-                if(song_info.get("alterid", 1) == 0):
+                if(song_info.get("alertid", 0) == 0):
                     continue
                 singer_list = song_info.get("singer", [{"name": "未知歌手"}])
                 singers = ""
@@ -48,9 +50,9 @@ async def handle_informations(matched: list):
                 else:
                     cover_url = QQMUSIC_SONG_COVER.format(**kwargs)
 
-            result.append([song_info[1], song_info[2], m4aUrl, song_info[3], cover_url])
+            result.append(Music(song_info[1], song_info[2], m4aUrl, song_info[3], cover_url))
 
-    logger.debug(f"{result}")
+    logger.debug(f"{[str(x) for x in result]}")
     return result
 
 async def search_song_by_name(songName):
