@@ -27,10 +27,10 @@ async def osearch_music_by_keyword(music_name: str) -> list[Music]:
 
     async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         async with session.post(SAYO_SEARCH_API, data=data) as req:
-            resp_json = await req.json()
             if req.status != 200:
                 raise Exception('fetch music list failed, api is down')
 
+            resp_json = await req.json()
             candidates = []
             if resp_json['status'] != -1:
 
