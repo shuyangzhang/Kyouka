@@ -1,4 +1,5 @@
 import os
+import io
 import aiohttp
 from mutagen.mp3 import MP3
 
@@ -42,28 +43,25 @@ async def msearch_music_by_keyword(music_name: str, limit: int=5) -> list[Music]
                     cover_image_url = music.get('cover', '')
                     if music['mp3']:
                         source = music.get('mp3', '')
-                        temp_file_path = await get_mp3_file(source, music['id'])
-                        audio = MP3(temp_file_path)
-                        duration = round(audio.info.length * 1000)
-                        os.remove(temp_file_path)
-                        
-                        candidates.append(Music(name, artist, source, duration, cover_image_url))
+                        stream = await get_mp3_stream(source)
+                        if stream:
+                            audio = MP3(io.BytesIO(stream))
+                            duration = round(audio.info.length * 1000)
+
+                            candidates.append(Music(name, artist, source, duration, cover_image_url))
             
     return candidates
 
 
-async def get_mp3_file(url: str, name: str):
+async def get_mp3_stream(url: str):
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as req:
-            temp_file_path = os.path.join(CACHE_PATH, f'{name}.mp3')
-            with open(temp_file_path, 'wb') as f:
-                f.write(await req.read())
-
-    return temp_file_path
+            if req.status == 200:
+                return await req.read()
+            return None
 
 
 if __name__ == '__main__':
     import asyncio
     loop = asyncio.get_event_loop()
     loop.run_until_complete(msearch_music_by_keyword('两人雨天'))
-    
