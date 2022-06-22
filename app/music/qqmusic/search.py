@@ -63,4 +63,4 @@ async def qsearch_music_by_keyword(songName):
 if __name__ == '__main__':
     import asyncio
     loop = asyncio.get_event_loop()
-    loop.run_until_complete((search_song_by_name("Igallta")))
+    loop.run_until_complete((qsearch_music_by_keyword("Igallta")))
