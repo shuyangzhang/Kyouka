@@ -11,6 +11,7 @@ idna==3.3
 khl.py==0.2.13
 loguru==0.6.0
 multidict==6.0.2
+mutagen==1.45.1
 pycryptodomex==3.14.1
 pydantic==1.9.1
 python-dotenv==0.20.0
