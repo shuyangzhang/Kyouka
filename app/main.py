@@ -13,6 +13,7 @@ from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.netease.radio import fetch_radio_by_id
 from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.music.osu.search import osearch_music_by_keyword
+from app.music.qqmusic.search import qsearch_music_by_keyword
 from app.music.migu.search import msearch_music_by_keyword
 from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
 from app.utils.channel_utils import get_joined_voice_channel_id
@@ -420,7 +421,7 @@ async def search_osu(msg: Message, *args):
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
-
+            
 @bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
 @log(command="msearch")
 @ban
@@ -447,8 +448,36 @@ async def search_migu(msg: Message, *args):
             await msg.channel.send(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
 
+            
+@bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
+@log(command="qsearch")
+@ban
+@warn
+async def search_qq(msg: Message, *args):
+    keyword = ' '.join(args)
+    if not keyword:
+        raise Exception("格式输入有误。\n正确格式为: /msearch {keyword} 或 /搜咪咕 {keyword}")
+    else:
+        candidates = await qsearch_music_by_keyword(keyword)
+        if candidates:
+            author_id = msg.author.id
+            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            candidates_body = {
+                "candidates": candidates,
+                "expire": expire
+            }
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
+
+            select_menu_msg = '已搜索到以下结果\n' + \
+                '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+            await msg.channel.send(select_menu_msg)
+
+        else:
+            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name="pause", aliases=["暂停"])
 @log(command="pause")

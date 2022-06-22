@@ -55,7 +55,7 @@ async def handle_informations(matched: list):
     logger.debug(f"{[str(x) for x in result]}")
     return result
 
-async def search_song_by_name(songName):
+async def qsearch_music_by_keyword(songName):
     matched = await get_song_mid(songName)
     return (await handle_informations(matched))
 
