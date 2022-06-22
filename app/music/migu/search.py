@@ -1,4 +1,3 @@
-import os
 import io
 import aiohttp
 from mutagen.mp3 import MP3
@@ -7,8 +6,6 @@ from app.music.music import Music
 
 USER_AGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"
 MIGU_API = 'https://m.music.migu.cn/migu/remoting/scr_search_tag'
-
-CACHE_PATH = os.path.join(os.path.dirname(__file__), 'cache')
 
 async def msearch_music_by_keyword(music_name: str, limit: int=5) -> list[Music]:
 
