@@ -320,7 +320,7 @@ async def cut_music(msg: Message):
             current_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + current_music.duration
             settings.playqueue.appendleft(current_music)
 
-            await msg.channel.send(f"正在为您播放 {next_music[0]} - {next_music[1]}")
+            await msg.channel.send(f"正在为您播放 {next_music.name} - {next_music.author}")
             settings.played = 5000
 
 @bot.command(name="remove", aliases=["rm", "删除", "删"])
@@ -346,7 +346,7 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
                 play_list = list(settings.playqueue)
                 removed_music = play_list[music_number - 1]
                 del settings.playqueue[music_number - 1]
-                await msg.channel.send(f"已将歌曲 {removed_music[0]}-{removed_music[1]} 从播放列表移除")
+                await msg.channel.send(f"已将歌曲 {removed_music.name}-{removed_music.author} 从播放列表移除")
 
 @bot.command(name='clear', aliases=['清空'])
 @log(command='clear')
@@ -390,7 +390,7 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
                 to_top_music = play_list[music_number - 1]
                 del settings.playqueue[music_number - 1]
                 settings.playqueue.insert(1, to_top_music)
-                await msg.channel.send(f"已将歌曲 {to_top_music[0]}-{to_top_music[1]} 在播放列表中置顶")
+                await msg.channel.send(f"已将歌曲 {to_top_music.name}-{to_top_music.author} 在播放列表中置顶")
 
 
 @bot.command(name='osearch', aliases=['osusearch', 'searchosu', '搜索osu', '搜osu'])
