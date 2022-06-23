@@ -133,7 +133,7 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
         raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
     else:
-        netease_playlist_pattern = re.compile(r"playlist(?:\?id=|/)(\d+)")
+        netease_playlist_pattern = re.compile(r"(?:playlist|^)(?:/|)(?:\?id=|)(\d+)")
         matched_obj = netease_playlist_pattern.search(playlist_url)
         if matched_obj:
             playlist_id = matched_obj.groups()[0]
@@ -155,7 +155,7 @@ async def import_music_by_album(msg: Message, album_url: str=''):
     if not album_url:
         raise Exception('输入格式有误。\n正确格式为: /album {album_url} 或 /电台 {album_url}')
     else:
-        netease_radio_pattern = re.compile(r'album(?:\?id=|/)(\d+)')
+        netease_radio_pattern = re.compile(r'(?:album|^)(?:/|)(?:\?id=|)(\d+)')
         matched_obj = netease_radio_pattern.search(album_url)
         if matched_obj:
             album_id = matched_obj.groups()[0]
@@ -178,7 +178,7 @@ async def import_music_by_radio(msg: Message, radio_url: str = ''):
     if not radio_url:
         raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
     else:
-        netease_radio_pattern = re.compile(r'radio\?id=(\d+)')
+        netease_radio_pattern = re.compile(r'(?:radio|^)(?:/|)(?:\?id=|)(\d+)')
         matched_obj = netease_radio_pattern.search(radio_url)
         if matched_obj:
             radio_id = matched_obj.groups()[0]
