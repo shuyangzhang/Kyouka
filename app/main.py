@@ -450,7 +450,7 @@ async def search_migu(msg: Message, *args):
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
 """
-            
+"""            
 @bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
 @log(command="qsearch")
 @ban
@@ -478,6 +478,7 @@ async def search_qq(msg: Message, *args):
 
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+"""
 
 @bot.command(name="pause", aliases=["暂停"])
 @log(command="pause")
