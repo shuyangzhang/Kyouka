@@ -20,7 +20,7 @@ class SourceRequestor(PropertyRequestor):
         async with aiohttp.ClientSession() as sess:
             async with sess.post('https://music.163.com/api/song/enhance/player/url/', params={
                 'br': '3200000',
-                'ids': f'[{self.song_id}]'
+                'Aids': f'[{self.song_id}]'
             }) as resp:
                 text = await resp.text()
                 data = json.loads(text)
@@ -32,7 +32,7 @@ class DetailRequestor(PropertyRequestor):
         super(DetailRequestor, self).__init__()
         self.song_id = song_id
 
-    async def invoke(self, *args, **kwargs):
+    async def __invoke(self):
         async with aiohttp.ClientSession() as sess:
             async with sess.post('https://music.163.com/api/song/detail/', params={
                 'ids': f'[{self.song_id}]'
@@ -58,14 +58,14 @@ class NeteaseMusic(MusicPiece):
     @property
     async def name(self) -> str:
         if self.__name is None:
-            data = await self.requestors['DetailRequestor']('name')
+            data = await self.requestors['DetailRequestor']()
             self.__name = data.get('songs', [{}])[0].get('name', 'N/A')
         return self.__name
 
     @property
     async def artists(self) -> list[str]:
         if self.artists is None:
-            data = await self.requestors['DetailRequestor']('name')
+            data = await self.requestors['DetailRequestor']()
             artists = data.get('songs', [{}])[0].get('artists', [])
             self.__artists = [artists.get('name', 'Unknown') for artist in artists]
         return self.__artists

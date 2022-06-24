@@ -72,15 +72,15 @@ class MusicPiece:
             self.owner = music
 
         @abstract
-        async def invoke(self, *args, **kwargs) -> any:
+        async def __invoke(self) -> any:
             pass
 
-        async def __call__(self, *args, **kwargs) -> any:
+        async def __call__(self) -> any:
             async with self.lock:
                 if time.time() - self.lastrun_sec > self.expiration_time_sec or self.__counter == 0:
                     self.__counter += 1
                     self.lastrun_sec = time.time()
-                    self.result = await self.invoke(*args, **kwargs)
+                    self.result = await self.invoke()
             return self.result
 
         def __repr__(self):
