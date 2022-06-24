@@ -19,6 +19,7 @@ class MusicPiece:
     def __init__(self, platform: Type['Platform'], requestors: list['PropertyRequestor']):
         self.platform = platform
         self.requestors: dict[str, 'PropertyRequestor'] = {}
+        self.endtime_ms: Optional[int] = None
 
         for r in requestors:
             r.bind(self)
@@ -51,16 +52,8 @@ class MusicPiece:
 
     @property
     @abstract
-    async def endtime_ms(self) -> int:
-        pass
-
-    @property
-    @abstract
     async def cover_url(self) -> str:
         pass
-
-    def __x(self):
-        return asyncio.gather(self.name, self.artists)
 
     def __repr__(self):
         return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
@@ -72,7 +65,7 @@ class MusicPiece:
             self.owner: Optional[MusicPiece] = None
             self.lock = Lock()
             self.cache = None
-            self.counter = 0
+            self.__counter = 0  # for profiling
             self.lastrun_sec = -math.inf
 
         def bind(self, music: 'MusicPiece'):
@@ -84,8 +77,8 @@ class MusicPiece:
 
         async def __call__(self, *args, **kwargs) -> any:
             async with self.lock:
-                if time.time() - self.lastrun_sec > self.expiration_time_sec or self.counter == 0:
-                    self.counter += 1
+                if time.time() - self.lastrun_sec > self.expiration_time_sec or self.__counter == 0:
+                    self.__counter += 1
                     self.lastrun_sec = time.time()
                     self.result = await self.invoke(*args, **kwargs)
             return self.result

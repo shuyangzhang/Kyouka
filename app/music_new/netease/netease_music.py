@@ -1,4 +1,5 @@
 import json
+from typing import Optional
 
 import aiohttp
 
@@ -23,7 +24,7 @@ class SourceRequestor(PropertyRequestor):
             }) as resp:
                 text = await resp.text()
                 data = json.loads(text)
-                return data.get('data', [{}])[0].get('url')
+                return data
 
 
 class DetailRequestor(PropertyRequestor):
@@ -38,8 +39,7 @@ class DetailRequestor(PropertyRequestor):
             }) as resp:
                 text = await resp.text()
                 data = json.loads(text)
-                song = data.get('songs', [{}])[0]
-                return song
+                return data
 
 
 class NeteaseMusic(MusicPiece):
@@ -49,16 +49,26 @@ class NeteaseMusic(MusicPiece):
             DetailRequestor(song_id)
         ])
         self.song_id = song_id
+        self.__name: Optional[str] = None
+        self.__artists: Optional[list[str]] = None
+        self.__playable: Optional[bool] = None
+        self.__duration_ms: Optional[int] = None
+        self.__cover_url: Optional[str] = None
 
     @property
     async def name(self) -> str:
-        song = await self.requestors['DetailRequestor']('name')
-        return song['name']
+        if self.__name is None:
+            data = await self.requestors['DetailRequestor']('name')
+            self.__name = data.get('songs', [{}])[0].get('name', 'N/A')
+        return self.__name
 
     @property
     async def artists(self) -> list[str]:
-        song = await self.requestors['DetailRequestor']('artist')
-        return [artist['name'] for artist in song['artists']]
+        if self.artists is None:
+            data = await self.requestors['DetailRequestor']('name')
+            artists = data.get('songs', [{}])[0].get('artists', [])
+            self.__artists = [artists.get('name', 'Unknown') for artist in artists]
+        return self.__artists
 
     @property
     async def media_url(self) -> str:
