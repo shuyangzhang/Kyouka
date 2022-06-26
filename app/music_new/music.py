@@ -1,12 +1,11 @@
-import asyncio
 import math
 import time
-from abc import abstractmethod as abstract
+from abc import abstractmethod as abstract, ABC as ABSTRACT
 from asyncio.locks import Lock
 from typing import Optional, Type
 
 
-class MusicPiece:
+class MusicPiece(ABSTRACT):
     """The abstract class for music in a single platform.
     If one day we need music playable from multiple platforms, then build a CompositeMusic class :)
 
@@ -58,9 +57,9 @@ class MusicPiece:
     def __repr__(self):
         return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
 
-    class PropertyRequestor:
+    class PropertyRequestor(ABSTRACT):
         def __init__(self, name: str = None, expiration_time_sec: float = math.inf):
-            self.name = name if name is not None else self.__class__.__name__
+            self.name = name or self.__class__.__name__
             self.expiration_time_sec = expiration_time_sec
             self.owner: Optional[MusicPiece] = None
             self.lock = Lock()
@@ -90,7 +89,7 @@ class MusicPiece:
 PropertyRequestor = MusicPiece.PropertyRequestor
 
 
-class Platform:
+class Platform(ABSTRACT):
     """The abstract class for a music platform.
 
     Some platforms may have additional feature (e.g. radio of netease).

@@ -16,7 +16,7 @@ class SourceRequestor(PropertyRequestor):
         super(SourceRequestor, self).__init__(expiration_time_sec=5 * 60)
         self.song_id = song_id
 
-    async def invoke(self, *args, **kwargs):
+    async def __invoke(self):
         async with aiohttp.ClientSession() as sess:
             async with sess.post('https://music.163.com/api/song/enhance/player/url/', params={
                 'br': '3200000',
