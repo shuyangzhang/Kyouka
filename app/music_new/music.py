@@ -1,5 +1,5 @@
 import math
-import time
+from time import time as now
 from abc import abstractmethod as abstract, ABC as ABSTRACT
 from asyncio.locks import Lock
 from typing import Optional, Type
@@ -15,9 +15,9 @@ class MusicPiece(ABSTRACT):
     Fetching multiple properties may lead to race condition. Avoid them while coding with a lock.
     """
 
-    def __init__(self, platform: Type['Platform'], requestors: list['PropertyRequestor']):
+    def __init__(self, platform: Type['Platform'], requestors: list['CachedRequestor']):
         self.platform = platform
-        self.requestors: dict[str, 'PropertyRequestor'] = {}
+        self.requestors: dict[str, 'CachedRequestor'] = {}
         self.endtime_ms: Optional[int] = None
 
         for r in requestors:
@@ -36,16 +36,6 @@ class MusicPiece(ABSTRACT):
 
     @property
     @abstract
-    async def playable(self) -> bool:
-        pass
-
-    @property
-    @abstract
-    async def media_url(self) -> str:
-        pass
-
-    @property
-    @abstract
     async def duration_ms(self) -> int:
         pass
 
@@ -54,39 +44,53 @@ class MusicPiece(ABSTRACT):
     async def cover_url(self) -> str:
         pass
 
+    @property
+    @abstract
+    async def playable(self) -> bool:
+        pass
+
+    @property
+    @abstract
+    async def media_url(self) -> Optional[str]:
+        pass
+
     def __repr__(self):
         return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
 
-    class PropertyRequestor(ABSTRACT):
-        def __init__(self, name: str = None, expiration_time_sec: float = math.inf):
-            self.name = name or self.__class__.__name__
-            self.expiration_time_sec = expiration_time_sec
-            self.owner: Optional[MusicPiece] = None
-            self.lock = Lock()
-            self.cache = None
-            self.__counter = 0  # for profiling
-            self.lastrun_sec = -math.inf
 
-        def bind(self, music: 'MusicPiece'):
-            self.owner = music
+class CachedRequestor(ABSTRACT):
+    def __init__(self, name: str = None, expiration_time_sec: float = math.inf):
+        self.name = name or self.__class__.__name__
+        self.expiration_time_sec = expiration_time_sec
+        self.owner: Optional[MusicPiece] = None
+        self.lock = Lock()
+        self.cache = None
+        self._request_counter = 0  # for profiling
+        self.lastrun_sec = -math.inf
 
-        @abstract
-        async def __invoke(self) -> any:
-            pass
+    def bind(self, music: 'MusicPiece'):
+        self.owner = music
 
-        async def __call__(self) -> any:
-            async with self.lock:
-                if time.time() - self.lastrun_sec > self.expiration_time_sec or self.__counter == 0:
-                    self.__counter += 1
-                    self.lastrun_sec = time.time()
-                    self.result = await self.invoke()
-            return self.result
+    @abstract
+    async def _invoke(self) -> any:
+        pass
 
-        def __repr__(self):
-            return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
+    async def __call__(self) -> any:
+        # if now() - self.lastrun_sec > self.expiration_time_sec or self._request_counter == 0:
+        #     async with self.lock:
+        #         if now() - self.lastrun_sec > self.expiration_time_sec or self._request_counter == 0:
+        #             self._request_counter += 1
+        #             self.cache = await self._invoke()
+        #             self.lastrun_sec = now()
+        async with self.lock:
+            if now() - self.lastrun_sec > self.expiration_time_sec or self._request_counter == 0:
+                self._request_counter += 1
+                self.cache = await self._invoke()
+                self.lastrun_sec = now()
+        return self.cache
 
-
-PropertyRequestor = MusicPiece.PropertyRequestor
+    def __repr__(self):
+        return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
 
 
 class Platform(ABSTRACT):
