@@ -1,76 +1,79 @@
+import math
+import re
 from time import time as now
-from typing import Optional
 
-from app.music_new.music import MusicPiece, Platform, CachedRequestor
+from app.music_new.music import *
 from app.music_new.netease.apis import *
+
+
+MUSIC_ID_PATTERN = re.compile(r'[1-9]\d*')
+MUSIC_URL_PATTERN = re.compile(
+    r'((https?)://)?music\.163\.com/'
+    r'(song/(?P<id1>[1-9]\d*))'
+    r'|(#/song\?(.*?&)*id=(?P<id2>[1-9]\d*))'
+)
 
 
 class NeteaseMusicPlatform(Platform):
     def __init__(self):
         super(NeteaseMusicPlatform, self).__init__('netease', 'netease-music', '网易', '网易云', '网易云音乐')
 
+    async def search_music(self, keywords: str, limit: int) -> list[MusicPiece]:
+        pass
 
-class SourceRequestor(CachedRequestor):
-    def __init__(self, song_id: int):
-        super(SourceRequestor, self).__init__(expiration_time_sec=5 * 60)
-        self.song_id = song_id
+    @staticmethod
+    def is_music_id(text: str):
+        return MUSIC_ID_PATTERN.fullmatch(text) is not None
 
-    async def _invoke(self) -> Optional[str]:
-        urls = await batch_fetch_media_urls(self.song_id)
-        self.cache = urls.get(self.song_id)
-        return self.cache
+    @staticmethod
+    def is_music_url(text: str):
+        return MUSIC_URL_PATTERN.fullmatch(text) is not None
+
+    async def play_by_url(self, url: str) -> Optional[MusicPiece]:
+        result = MUSIC_URL_PATTERN.fullmatch(url)
+        if result is None:
+            return None
+        result = result.groupdict()
+        result = result.get('id1') or result.get('id2')
+        if result is None:
+            return None
+        return await self.play_by_id(int(result))
+
+    async def play_by_id(self, music_id: int) -> Optional[MusicPiece]:
+        details = await batch_fetch_basic_details(music_id)
+        detail = details.get(music_id)
+        return None if detail is None else NeteaseMusic(music_id, detail)
+
+    async def import_playlist_by_url(self, url: str) -> Optional[MusicPiece]:
+        pass
+
+    async def import_album_by_url(self, url: str, range_from: int, range_to_inclusive: int) -> Optional[MusicPiece]:
+        pass
 
 
-class DetailRequestor(CachedRequestor):
-    def __init__(self, song_id, details: BasicDetails = None):
-        super(DetailRequestor, self).__init__()
-        self.song_id = song_id
-        if details is not None:
-            self.cache = details
-            self.lastrun_sec = now()
-
-    async def _invoke(self) -> BasicDetails:
-        details = await batch_fetch_basic_details(self.song_id)
-        if details.get(self.song_id) is not None:
-            self.cache = details[self.song_id]
-            return self.cache
-        else:
-            raise Exception(f'no music found corresponding to id {self.song_id}.')
+MEDIA_EXPIRATION_TIME_SEC = 5 * 60
 
 
 class NeteaseMusic(MusicPiece):
-    def __init__(self, song_id, details: BasicDetails = None):
-        super().__init__(NeteaseMusicPlatform, [
-            SourceRequestor(song_id),
-            DetailRequestor(song_id, details)
-        ])
-
-    @property
-    async def name(self) -> str:
-        details: BasicDetails = await self.requestors[DetailRequestor.__name__]()
-        return details.name
-
-    @property
-    async def artists(self) -> list[str]:
-        details: BasicDetails = await self.requestors[DetailRequestor.__name__]()
-        return details.artists
-
-    @property
-    async def duration_ms(self) -> int:
-        details: BasicDetails = await self.requestors[DetailRequestor.__name__]()
-        return details.duration_ms
+    def __init__(self, song_id: int, details: BasicDetails):
+        super(NeteaseMusic, self).__init__(NeteaseMusicPlatform, details.name, details.artists)
+        self.song_id = song_id
+        self.details = details
+        self.__media_expiration_sec = -math.inf
+        self.__media_url = None
 
     @property
     async def cover_url(self) -> str:
-        details: BasicDetails = await self.requestors[DetailRequestor.__name__]()
-        return details.cover_url
+        return self.details.cover_url
 
     @property
-    async def playable(self) -> bool:
-        url: Optional[str] = await self.requestors[SourceRequestor.__name__]()
-        return url is not None
+    async def duration_ms(self) -> int:
+        return self.details.duration_ms
 
     @property
     async def media_url(self) -> Optional[str]:
-        url: Optional[str] = await self.requestors[SourceRequestor.__name__]()
-        return url
+        if self.__media_expiration_sec < now():
+            urls = await batch_fetch_media_urls(self.song_id)
+            self.__media_url = urls.get(self.song_id)
+            self.__media_expiration_sec = now() + MEDIA_EXPIRATION_TIME_SEC
+        return self.__media_url

@@ -1,43 +1,13 @@
-import math
-from time import time as now
 from abc import abstractmethod as abstract, ABC as ABSTRACT
-from asyncio.locks import Lock
 from typing import Optional, Type
 
 
 class MusicPiece(ABSTRACT):
-    """The abstract class for music in a single platform.
-    If one day we need music playable from multiple platforms, then build a CompositeMusic class :)
-
-    Most properties are essentially getters thus we can perform lazy loading.
-    Online resources that can expire (e.g. playable media links) should be re-obtained when necessary.
-
-    Fetching multiple properties may lead to race condition. Avoid them while coding with a lock.
-    """
-
-    def __init__(self, platform: Type['Platform'], requestors: list['CachedRequestor']):
+    def __init__(self, platform: Type['Platform'], name: str, artists: list[str]):
         self.platform = platform
-        self.requestors: dict[str, 'CachedRequestor'] = {}
+        self.name = name or 'N/A'
+        self.artists = artists or ['Unknown']
         self.endtime_ms: Optional[int] = None
-
-        for r in requestors:
-            r.bind(self)
-            self.requestors[r.name] = r
-
-    @property
-    @abstract
-    async def name(self) -> str:
-        pass
-
-    @property
-    @abstract
-    async def artists(self) -> list[str]:
-        pass
-
-    @property
-    @abstract
-    async def duration_ms(self) -> int:
-        pass
 
     @property
     @abstract
@@ -46,60 +16,40 @@ class MusicPiece(ABSTRACT):
 
     @property
     @abstract
-    async def playable(self) -> bool:
+    async def duration_ms(self) -> int:
         pass
+
+    @property
+    async def playable(self) -> bool:
+        return (await self.media_url) is not None
 
     @property
     @abstract
     async def media_url(self) -> Optional[str]:
+        """Must be consistent with the self.playable: return None when self.playable is False"""
         pass
 
     def __repr__(self):
-        return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
-
-
-class CachedRequestor(ABSTRACT):
-    def __init__(self, name: str = None, expiration_time_sec: float = math.inf):
-        self.name = name or self.__class__.__name__
-        self.expiration_time_sec = expiration_time_sec
-        self.owner: Optional[MusicPiece] = None
-        self.lock = Lock()
-        self.cache = None
-        self._request_counter = 0  # for profiling
-        self.lastrun_sec = -math.inf
-
-    def bind(self, music: 'MusicPiece'):
-        self.owner = music
-
-    @abstract
-    async def _invoke(self) -> any:
-        pass
-
-    async def __call__(self) -> any:
-        # if now() - self.lastrun_sec > self.expiration_time_sec or self._request_counter == 0:
-        #     async with self.lock:
-        #         if now() - self.lastrun_sec > self.expiration_time_sec or self._request_counter == 0:
-        #             self._request_counter += 1
-        #             self.cache = await self._invoke()
-        #             self.lastrun_sec = now()
-        async with self.lock:
-            if now() - self.lastrun_sec > self.expiration_time_sec or self._request_counter == 0:
-                self._request_counter += 1
-                self.cache = await self._invoke()
-                self.lastrun_sec = now()
-        return self.cache
-
-    def __repr__(self):
-        return f'<{self.__class__.__name__} with attributes {self.__dict__}>'
+        return f'{self.__class__.__name__}({self.platform.__name__}, {repr(self.name)}, {repr(self.artists)})'
 
 
 class Platform(ABSTRACT):
     """The abstract class for a music platform.
 
     Some platforms may have additional feature (e.g. radio of netease).
-    What we should do is create another platform with different implementation.
-    Methods not implemented should be discovered by checking the @abstract annotation.
+    What we should do is to create another platform with different implementation.
+
+    Do raise NotImplementedError and update __functionalities__ when some functionalities are not available.
     """
+
+    __functionalities__ = [
+        'search_music',
+        'play_by_keywords',
+        'play_by_url',
+        'play_by_id',
+        'import_album_by_url',
+        'import_playlist_by_url'
+    ]
 
     def __init__(self, name: str, *alias: str):
         self.name = name
@@ -124,6 +74,7 @@ class Platform(ABSTRACT):
     @staticmethod
     @abstract
     def is_music_id(text: str):
+        """Make it return False if playing by id is not applicable."""
         pass
 
     async def play_by_keywords(self, keywords: str, limit: int) -> Optional[MusicPiece]:
@@ -136,7 +87,7 @@ class Platform(ABSTRACT):
         pass
 
     @abstract
-    async def play_by_id(self, music_id: int):
+    async def play_by_id(self, music_id: int) -> Optional[MusicPiece]:
         pass
 
     # ============================================= Album =============================================
