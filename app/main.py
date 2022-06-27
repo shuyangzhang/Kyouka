@@ -399,7 +399,6 @@ async def search_osu(msg: Message, *args):
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
-"""        
 @bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
 @log(command="msearch")
 @ban
@@ -427,7 +426,7 @@ async def search_migu(msg: Message, *args):
 
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
-"""
+
 """            
 @bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
 @log(command="qsearch")
