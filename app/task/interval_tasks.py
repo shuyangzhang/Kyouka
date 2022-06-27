@@ -6,6 +6,7 @@ from loguru import logger
 from khl import Bot
 from app.config.common import settings
 from app.utils.channel_utils import update_channel_name_by_bot
+from app.utils.playing_utils import set_playing_game_status_by_bot, BUSY_STATUS_GAME_ID, FREE_STATUS_GAME_ID
 from app.voice_utils.container_handler import create_container, stop_container
 from app.music.bilibili.search import BPROXY_API
 
@@ -109,3 +110,11 @@ async def update_kanban_info(bot: Bot):
             logger.info(f"kanban info is updated to {kanban_info} successfully")
     except Exception as e:
         logger.error(f"failed to update the kanban info, error msg: {e}, traceback: {traceback.format_exc()}")
+
+async def update_playing_game_status(bot: Bot):
+    try:
+        game_status_id = FREE_STATUS_GAME_ID if len(settings.playqueue) == 0 else BUSY_STATUS_GAME_ID
+        await set_playing_game_status_by_bot(bot=bot, game_id=game_status_id) 
+        logger.info(f"playing status is updated to {game_status_id} successfully.(busy is {BUSY_STATUS_GAME_ID}, free is {FREE_STATUS_GAME_ID})")
+    except Exception as e:
+        logger.error(f"failed to update playing status, error msg: {e}, traceback: {traceback.format_exc()}")
