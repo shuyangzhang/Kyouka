@@ -31,26 +31,6 @@ if settings.file_logger:
 
 bot = Bot(token=settings.token)
 
-
-'''
-async def get_game_list():
-
-    games = await bot.list_game()
-    idle = next(filter(lambda g: g.name == '空闲', games), None)
-    if idle is None:
-        idle = await bot.create_game('空闲')
-
-    playing = next(filter(lambda g: g.name == '繁忙', games), None)
-    if playing is None:
-        playing = await bot.create_game('繁忙')
-
-    return {'idle': idle, 'playing': playing}
-
-
-#TODO: get idle, playing at bot.onstart
-'''
-
-
 @bot.command(name="ping")
 @log(command="ping")
 async def ping(msg: Message):
