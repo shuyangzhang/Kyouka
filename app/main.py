@@ -4,6 +4,7 @@ import datetime
 from loguru import logger
 from khl import Message, Bot
 from khl.card import CardMessage
+from app.bot import bot
 from app.config.common import settings
 from app.music.netease.album import fetch_album_by_id
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
@@ -29,7 +30,7 @@ __version__ = "0.6.2"
 if settings.file_logger:
     logger.add(f"{settings.container_name}.log", rotation="1 week")
 
-bot = Bot(token=settings.token)
+# bot = Bot(token=settings.token)
 
 @bot.command(name="ping")
 @log(command="ping")
@@ -550,7 +551,7 @@ async def one_minutes_interval_tasks():
 @bot.task.add_interval(minutes=3)
 async def three_minutes_interval_tasks():
     await update_kanban_info(bot=bot)
-    await update_playing_game_status(bot=bot)
+    # await update_playing_game_status(bot=bot)
 
 # buttons reflection event, WIP
 from khl import Event,EventTypes
