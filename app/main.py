@@ -218,10 +218,10 @@ async def search_music(msg: Message, *args):
                 this_item_str = f"<{index + 1}> {this_item.name} - {this_item.author} \n"
                 select_menu_msg += this_item_str
             select_menu_msg += "\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)"
-            await msg.channel.send(select_menu_msg)
+            await msg.reply(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name="select", aliases=["pick", "选择", "选"])
 @log(command="select")
@@ -394,10 +394,10 @@ async def search_osu(msg: Message, *args):
             select_menu_msg = '已搜索到以下结果\n' + \
                 '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
                 '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.channel.send(select_menu_msg)
+            await msg.reply(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
 @log(command="msearch")
@@ -422,10 +422,10 @@ async def search_migu(msg: Message, *args):
             select_menu_msg = '已搜索到以下结果\n' + \
                 '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
                 '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.channel.send(select_menu_msg)
+            await msg.reply(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
 
 """            
 @bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
