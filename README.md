@@ -7,7 +7,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![khl server](https://www.kaiheila.cn/api/v3/badge/guild?guild_id=4648697392687523&style=3)](https://kaihei.co/oHRMIL)
 
-Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn/), it is easy to use and develop.
+Kyouka is a simple and powerful music bot for [KOOK](https://www.kookapp.cn/), it is easy to use and develop.
 </div>
 
 ## Multilingual README
@@ -16,6 +16,7 @@ English | [中文](./README_ZH_CN.md)
 
 ## Contents
 
+- [Statement](#statement)
 - [Features](#features)
 - [Dependencies](#dependencies)
 - [Installation and Deployment](#installation-and-deployment)
@@ -29,6 +30,13 @@ English | [中文](./README_ZH_CN.md)
   - [License](#license)
 - [Community](#community)
 - [Credits](#credits)
+
+## Statement
+
+This repository is created just for learning python(Commercial prohibition).  
+All the apis used in this repository are from public network. So, if you wanna to listen the paid songs,   
+please open a paid member on corresponding music platform by yourself (respect the music copyright please).  
+Finally, if there are any infringements, please contact me to delete this repository.  
 
 ## Features
 
@@ -71,7 +79,7 @@ docker pull shuyangzhang/khl-voice
 
 4. copy the `.env.template` file from this repository or clone this repository, then rename it to `.env`.
 ```bash
-git clone git@github.com:shuyangzhang/Kyouka.git
+git clone https://github.com/shuyangzhang/Kyouka.git
 cd Kyouka
 mv .env.template .env
 ```
@@ -131,7 +139,7 @@ python -V
 
 4. clone this repository, then rename `.env.template` file to `.env`.
 ```bash
-git clone git@github.com:shuyangzhang/Kyouka.git
+git clone https://github.com/shuyangzhang/Kyouka.git
 cd Kyouka
 mv .env.template .env
 ```
@@ -191,12 +199,17 @@ send a `/help` command in you channel, Kyouka will teach you how to use.
 - `/comehere`: bind the voice channel you are in.
 - `/channel {channel_id}`: bind the voice channel with id.
 - `/play {music_name}`: add a music to play list.
-- `/search {keyword}`: search music by keyword.
+- `/search {keyword}`: search music by keyword from netease cloud music.
+- `/msearch {keyword}`: search music by keyword from migu music.
+- `/qsearch {keyword}`: search music by keyword from qq muisc.
+- `/osearch {keyword}`: search music by keyword from game osu!.
 - `/select {search_list_id}`: select a music from search result, then add it to play list.
 - `/bilibili {bilibili_video_url}`: add a video from Bilibili to play list.
 - `/list`: check the play list.
 - `/cut`: play the next music in play list.
-- `/import {playlist_url}`: import a netease cloud music play list to Kyouka.
+- `/playlist {playlist_url}`: import a netease cloud music play list to Kyouka.
+- `/radio {radio_url}`: import a netease cloud music radio list to Kyouka.
+- `/album {album_url}`: import a netease cloud music album to Kyouka.
 - `/remove {list_id}`: remove a music from play list.
 - `/top {list_id}`: place a music at the top of play list.
 
@@ -209,7 +222,7 @@ Use the issue tracker to suggest feature requests, report bugs, and ask question
 Generally speaking, you should fork this repository, make changes in your own fork, and then submit a pull request. All commit messages should satisfy [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.4/)
 
 ### License
-This project is licensed under the terms of the MIT license.
+This project is licensed under the terms of the [MIT license](./LICENSE).
 
 ## Community
 If you need help, have any comments and suggestions, or want to develop Kyouka together, feel free to join our official community: https://kaihei.co/oHRMIL

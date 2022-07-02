@@ -7,7 +7,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![khl server](https://www.kaiheila.cn/api/v3/badge/guild?guild_id=4648697392687523&style=3)](https://kaihei.co/oHRMIL)
 
-Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn/), it is easy to use and develop.
+Kyouka is a simple and powerful music bot for [KOOK](https://www.kookapp.cn/), it is easy to use and develop.
 </div>
 
 ## Multilingual README
@@ -16,6 +16,7 @@ Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn
 
 ## Contents
 
+- [声明](#声明)
 - [特性](#特性)
 - [依赖](#依赖)
 - [安装与部署](#安装与部署)
@@ -29,6 +30,12 @@ Kyouka is a simple and powerful music bot for [KaiHeiLa](https://www.kaiheila.cn
   - [许可协议](#许可协议)
 - [社区](#社区)
 - [致谢](#致谢)
+
+## 声明
+
+本项目仅供Python爱好者学习使用, 若您基于本项目进行商业行为, 您将承担所有的法律责任, 作者与其他贡献者将不承担任何责任.  
+本项目的所有API均来源于公开网络, 本项目无任何破解、盗版等行为, 如果您需要付费歌曲, 请自行前往各音乐平台付费获取.  
+最后, 如有侵权, 请联系我删除该项目.  
 
 ## 特性
 
@@ -71,7 +78,7 @@ docker pull shuyangzhang/khl-voice
 
 4. 从此代码仓库复制文件: `.env.template` 或克隆此代码仓库, 然后把它重命名为 `.env`.
 ```bash
-git clone git@github.com:shuyangzhang/Kyouka.git
+git clone https://github.com/shuyangzhang/Kyouka.git
 cd Kyouka
 mv .env.template .env
 ```
@@ -131,7 +138,7 @@ python -V
 
 4. 克隆此代码仓库, 然后将文件 `.env.template` 重命名为 `.env`
 ```bash
-git clone git@github.com:shuyangzhang/Kyouka.git
+git clone https://github.com/shuyangzhang/Kyouka.git
 cd Kyouka
 mv .env.template .env
 ```
@@ -191,12 +198,17 @@ python startup.py
 - `/comehere`: 绑定你所在的语音频道
 - `/channel {channel_id}`: 通过语音频道的ID进行绑定
 - `/play {music_name}`: 点歌
-- `/search {keyword}`: 搜索歌曲
+- `/search {keyword}`: 搜索网易云音乐中的歌曲
+- `/msearch {keyword}`: 搜索咪咕音乐中的歌曲
+- `/qsearch {keyword}`: 搜索QQ音乐中的歌曲
+- `/osearch {keyword}`: 搜索osu!中的歌曲
 - `/select {search_list_id}`: 将搜索结果中的歌曲加入播放列表
 - `/bilibili {bilibili_video_url}`: 点播B站视频
 - `/list`: 查看播放列表
 - `/cut`: 切歌
-- `/import {playlist_url}`: 导入网易云音乐歌单(前10首歌曲)
+- `/playlist {playlist_url}`: 导入网易云音乐歌单(前10首歌曲)
+- `/radio {radio_url}`: 导入网易云音乐电台
+- `/album {album_url}`: 导入网易云音乐专辑
 - `/remove {list_id}`: 删除播放列表中的歌曲
 - `/top {list_id}`: 将播放列表中的歌曲置顶
 
@@ -209,7 +221,7 @@ python startup.py
 通俗地说，你应该 fork 这个仓库，在你自己 fork 的仓库中进行修改，然后提交一个PR, 并且所有的 commit message 应该满足 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.4/)
 
 ### 许可协议
-本项目是根据 MIT 许可协议的条款进行授权的
+本项目是根据 [MIT 许可协议](./LICENSE)的条款进行授权的
 
 ## 社区
 如果你需要帮助, 有任何意见和建议, 或者想一起开发 Kyouka 镜华, 欢迎加入我们的官方社区: https://kaihei.co/oHRMIL
