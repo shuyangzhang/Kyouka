@@ -12,6 +12,7 @@ khl.py==0.2.15
 loguru==0.6.0
 multidict==6.0.2
 mutagen==1.45.1
+Pillow==9.2.0
 pycryptodomex==3.14.1
 pydantic==1.9.1
 python-dotenv==0.20.0
