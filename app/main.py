@@ -122,7 +122,10 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
         else:
-            settings.playqueue.extend(result)
+            if settings.public:
+                settings.playqueue.extend(result[0:15])
+            else:
+                settings.playqueue.extend(result)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
 
 @bot.command(name='album', aliases=['专辑', '导入专辑'])
@@ -144,7 +147,10 @@ async def import_music_by_album(msg: Message, album_url: str=''):
         if not result:
             raise Exception('专辑为空哦，请检查你的输入')
         else:
-            settings.playqueue.extend(result)
+            if settings.public:
+                settings.playqueue.extend(result[0:15])
+            else:
+                settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
 
@@ -167,7 +173,10 @@ async def import_music_by_radio(msg: Message, radio_url: str = ''):
         if not result:
             raise Exception('电台为空哦，请检查你的输入')
         else:
-            settings.playqueue.extend(result)
+            if settings.public:
+                settings.playqueue.extend(result[0:15])
+            else:
+                settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
