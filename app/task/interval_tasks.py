@@ -7,7 +7,8 @@ from khl import Bot
 from app.config.common import settings
 from app.utils.channel_utils import update_channel_name_by_bot
 from app.utils.playing_utils import set_playing_game_status_by_bot, BUSY_STATUS_GAME_ID, FREE_STATUS_GAME_ID
-from app.voice_utils.container_handler import create_container, stop_container
+#from app.voice_utils.container_handler import create_container, stop_container
+from app.voice_utils.container_async_handler import container_handler
 from app.music.bilibili.search import BPROXY_API
 
 
@@ -29,9 +30,7 @@ async def update_played_time_and_change_music():
             else:
                 first_music = settings.playqueue[0]
                 if settings.played == 0:
-                    await stop_container(settings.container_name)
-                    await create_container(settings.token, settings.channel, first_music.source, 'false',
-                                           settings.container_name)
+                    await container_handler.create_container(first_music.source)
 
                     first_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + first_music.duration
 
@@ -47,15 +46,13 @@ async def update_played_time_and_change_music():
                     else:
                         settings.playqueue.popleft()
                         if len(settings.playqueue) == 0:
-                            await stop_container(settings.container_name)
+                            await container_handler.stop_container()
                             settings.played = 0
                             settings.lock = False
                             return None
                         else:
                             next_music = settings.playqueue[0]
-                            await stop_container(settings.container_name)
-                            await create_container(settings.token, settings.channel, next_music.source, 'false',
-                                                   settings.container_name)
+                            await container_handler.create_container(next_music.source)
 
                             next_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + next_music.duration
 

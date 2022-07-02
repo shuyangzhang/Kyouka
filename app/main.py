@@ -13,7 +13,8 @@ from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.music.osu.search import osearch_music_by_keyword
 from app.music.qqmusic.search import qsearch_music_by_keyword
 from app.music.migu.search import msearch_music_by_keyword
-from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
+# from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
+from app.voice_utils.container_async_handler import container_handler
 from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator_factory as log
 from app.utils.permission_utils import warn_decorator as warn
@@ -292,22 +293,21 @@ async def cut_music(msg: Message):
         if len(play_list) == 1:
             await msg.channel.send("正在切歌，请稍候")
             settings.playqueue.popleft()
-            await stop_container(settings.container_name)
+            await container_handler.stop_container()
             await msg.channel.send("后面没歌了哦")
             settings.played = 0
         else:
             await msg.channel.send("正在切歌，请稍候")
             settings.playqueue.popleft()
-            await stop_container(settings.container_name)
             next_music = settings.playqueue[0]
-            await stop_container(settings.container_name)
-            await create_container(settings.token, settings.channel, next_music.source, "false", settings.container_name)
-
-            current_music = settings.playqueue.popleft()
-            current_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + current_music.duration
-            settings.playqueue.appendleft(current_music)
-
+            next_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + next_music.duration
             await msg.channel.send(f"正在为您播放 {next_music.name} - {next_music.author}")
+            await container_handler.create_container(next_music.source)
+
+            #current_music = settings.playqueue.popleft()
+            #current_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + current_music.duration
+            #settings.playqueue.appendleft(current_music)
+
             settings.played = 5000
 
 @bot.command(name="remove", aliases=["rm", "删除", "删"])
@@ -347,7 +347,7 @@ async def clear_playlist(msg: Message):
         else:
             await msg.channel.send("正在清空播放列表，请稍候")
             settings.playqueue.clear()
-            await stop_container(settings.container_name)
+            await container_handler.stop_container()
             await msg.channel.send("播放列表已清空")
             settings.played = 0
     else:
@@ -469,14 +469,14 @@ async def search_qq(msg: Message, *args):
 @ban
 @warn
 async def pause(msg: Message):
-    await pause_container(settings.container_name)
+    await container_handler.pause_container()
 
 @bot.command(name="unpause", aliases=["取消暂停", "继续"])
 @log(command="unpause")
 @ban
 @warn
 async def unpause(msg: Message):
-    await unpause_container(settings.container_name)
+    await container_handler.unpause_container()
 
 """
 @bot.command(name="stop", aliases=["停止", "结束"])
@@ -539,6 +539,12 @@ async def logout(msg: Message):
         raise KeyboardInterrupt()
     else:
         await msg.channel.send("permission denied")
+
+
+# startup events
+@bot.task.add_date()
+async def startup_tasks():
+    await container_handler.clear_leaked_containers()
 
 
 # repeated tasks
