@@ -7,7 +7,6 @@ from khl import Bot
 from app.config.common import settings
 from app.utils.channel_utils import update_channel_name_by_bot
 from app.utils.playing_utils import set_playing_game_status_by_bot, BUSY_STATUS_GAME_ID, FREE_STATUS_GAME_ID
-#from app.voice_utils.container_handler import create_container, stop_container
 from app.voice_utils.container_async_handler import container_handler
 from app.music.bilibili.search import BPROXY_API
 
