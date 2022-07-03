@@ -23,7 +23,7 @@ from app.task.interval_tasks import update_played_time_and_change_music, clear_e
 import app.CardStorage as CS
 
 
-__version__ = "0.6.2"
+__version__ = "0.7.0"
 
 # logger
 if settings.file_logger:

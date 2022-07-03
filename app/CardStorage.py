@@ -137,7 +137,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.6.2 20220628 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.0 20220703 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
@@ -163,6 +163,7 @@ def HelpCard() -> Card:
 `/play {music_name}` - 点歌
 `/search {keyword}` - 搜索歌曲
 `/msearch {keyword}` - 搜索咪咕音乐中的歌曲
+`/qsearch {keyword}` - 搜索QQ音乐中的歌曲
 `/osearch {keyword}` - 搜索osu!中的歌曲
 `/select {search_list_id}` - 从搜索的列表中选择歌曲
 `/bilibili {bili_video_url}` - 点播B站视频 [实验功能, 暂不稳定]
@@ -172,7 +173,6 @@ def HelpCard() -> Card:
 `/album {album_url}` - 导入网易云音乐专辑
 `/radio {radio_url}` - 导入网易云电台
 `/remove {list_id}` - 删除歌单中的歌曲
-`/clear` - 清空歌单
 `/top {list_id}` - 播放列表中的歌曲置顶
 """
                 , type=Types.Text.KMD
