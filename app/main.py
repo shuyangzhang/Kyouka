@@ -18,7 +18,7 @@ from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator_factory as log
 from app.utils.permission_utils import warn_decorator as warn
 from app.utils.permission_utils import ban_decorator as ban
-from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info, update_playing_game_status
+from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info, update_playing_game_status, keep_bot_market_heart_beat
 
 import app.CardStorage as CS
 
@@ -559,6 +559,10 @@ async def one_minutes_interval_tasks():
 async def three_minutes_interval_tasks():
     await update_kanban_info(bot=bot)
     await update_playing_game_status(bot=bot)
+
+@bot.task.add_interval(minutes=20)
+async def twenty_minutes_interval_tasks():
+    await keep_bot_market_heart_beat()
 
 # buttons reflection event, WIP
 from khl import Event,EventTypes
