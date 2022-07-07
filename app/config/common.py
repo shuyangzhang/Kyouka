@@ -22,6 +22,9 @@ class CommonSettings(BaseSettings):
     kanban: bool = False
     kanban_channel: str = ""
 
+    bot_market_heart_beat: bool = False
+    bot_market_uuid: str = ""
+
     warned_user_list: List[str] = []
     banned_user_list: List[str] = []
 
