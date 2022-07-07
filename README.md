@@ -6,6 +6,7 @@
 [![Release](https://img.shields.io/github/v/release/shuyangzhang/Kyouka)](https://github.com/shuyangzhang/Kyouka/releases)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 [![khl server](https://www.kaiheila.cn/api/v3/badge/guild?guild_id=4648697392687523&style=3)](https://kaihei.co/oHRMIL)
+![github stars](https://img.shields.io/github/stars/shuyangzhang/Kyouka?style=social)
 
 Kyouka is a simple and powerful music bot for [KOOK](https://www.kookapp.cn/), it is easy to use and develop.
 </div>
@@ -47,7 +48,7 @@ Finally, if there are any infringements, please contact me to delete this reposi
 ## Dependencies
 
 + Docker, whether you are deploying based on docker or binaries.
-+ Python >= 3.6, if you wanna to deploy it based on source code.
++ Python >= 3.9, if you wanna to deploy it based on source code.
 
 ## Installation and Deployment
 
