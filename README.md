@@ -130,7 +130,7 @@ docker version
 docker pull shuyangzhang/khl-voice
 ```
 
-3. make sure you have installed `Python`, and its version >= 3.6
+3. make sure you have installed `Python`, and its version >= 3.9
 
 > [Download Python for your os](https://www.python.org/downloads/)
 

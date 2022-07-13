@@ -129,7 +129,7 @@ docker version
 docker pull shuyangzhang/khl-voice
 ```
 
-3. 确认你的系统已安装 Python , 并且它的版本大于等于3.6
+3. 确认你的系统已安装 Python , 并且它的版本大于等于3.9
 
 > [为你的操作系统安装 Python](https://www.python.org/downloads/)
 
