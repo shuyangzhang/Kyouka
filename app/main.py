@@ -9,7 +9,7 @@ from app.music.netease.album import fetch_album_by_id
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.netease.radio import fetch_radio_by_id
-from app.music.bilibili.search import bvid_to_music_by_bproxy
+from app.music.bilibili.search import bvid_to_music_by_bproxy, bvid_to_music_by_local_bproxy
 from app.music.osu.search import osearch_music_by_keyword
 from app.music.qqmusic.search import qsearch_music_by_keyword
 from app.music.migu.search import msearch_music_by_keyword
@@ -23,7 +23,7 @@ from app.task.interval_tasks import update_played_time_and_change_music, clear_e
 import app.CardStorage as CS
 
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 # logger
 if settings.file_logger:
@@ -193,7 +193,10 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
             BVid = matched_obj.group()
         else:
             raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
-        result = await bvid_to_music_by_bproxy(BVid=BVid)
+        if settings.local_bproxy:
+            result = await bvid_to_music_by_local_bproxy(BVid=BVid)
+        else:
+            result = await bvid_to_music_by_bproxy(BVid=BVid)
         if result:
             await msg.channel.send(f"已将 {result.name}-{result.author} 添加到播放列表")
             settings.playqueue.append(result)
