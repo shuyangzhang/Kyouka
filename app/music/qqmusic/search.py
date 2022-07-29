@@ -1,7 +1,9 @@
 import json
 import aiohttp
 from loguru import logger
+from khl import Bot
 from app.music.music import Music
+from app.utils.asset_utils import webp2jpeg
 
 
 QQMUSIC_SEARCH_API = "https://c.y.qq.com/soso/fcgi-bin/client_search_cp?p=1&w="
@@ -33,7 +35,7 @@ async def get_song_mid(songName: str):
                 matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0) * 1000, song_info.get("albummid", "")))
     return matched
 
-async def handle_informations(matched: list):
+async def handle_informations(bot: Bot, matched: list):
     result = []
     guid, uin = "0", "0"
     for song_info in matched:
@@ -48,16 +50,17 @@ async def handle_informations(matched: list):
                 if(response.status == 404):
                     cover_url = "http://y.qq.com/mediastyle/global/img/album_300.png"
                 else:
-                    cover_url = QQMUSIC_SONG_COVER.format(**kwargs)
+                    cover_url_webp = QQMUSIC_SONG_COVER.format(**kwargs)
+                    cover_url = await webp2jpeg(bot, cover_url_webp)
 
             result.append(Music(song_info[1], song_info[2], m4aUrl, song_info[3], cover_url))
 
     logger.debug(f"{[str(x) for x in result]}")
     return result
 
-async def qsearch_music_by_keyword(songName):
+async def qsearch_music_by_keyword(bot, songName):
     matched = await get_song_mid(songName)
-    return (await handle_informations(matched))
+    return (await handle_informations(bot, matched))
 
 
 if __name__ == '__main__':

@@ -14,17 +14,17 @@ from app.music.bilibili.search import bvid_to_music_by_bproxy
 from app.music.osu.search import osearch_music_by_keyword
 from app.music.qqmusic.search import qsearch_music_by_keyword
 from app.music.migu.search import msearch_music_by_keyword
-from app.voice_utils.container_handler import create_container, stop_container, pause_container, unpause_container
+from app.voice_utils.container_async_handler import container_handler
 from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator_factory as log
 from app.utils.permission_utils import warn_decorator as warn
 from app.utils.permission_utils import ban_decorator as ban
-from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info, update_playing_game_status
+from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info, update_playing_game_status, keep_bot_market_heart_beat
 
 import app.CardStorage as CS
 
 
-__version__ = "0.6.2"
+__version__ = "0.7.0"
 
 # logger
 if settings.file_logger:
@@ -123,7 +123,10 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
         if not result:
             raise Exception("歌单为空哦，请检查你的输入")
         else:
-            settings.playqueue.extend(result)
+            if settings.public:
+                settings.playqueue.extend(result[0:15])
+            else:
+                settings.playqueue.extend(result)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
 
 @bot.command(name='album', aliases=['专辑', '导入专辑'])
@@ -145,7 +148,10 @@ async def import_music_by_album(msg: Message, album_url: str=''):
         if not result:
             raise Exception('专辑为空哦，请检查你的输入')
         else:
-            settings.playqueue.extend(result)
+            if settings.public:
+                settings.playqueue.extend(result[0:15])
+            else:
+                settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
 
@@ -168,7 +174,10 @@ async def import_music_by_radio(msg: Message, radio_url: str = ''):
         if not result:
             raise Exception('电台为空哦，请检查你的输入')
         else:
-            settings.playqueue.extend(result)
+            if settings.public:
+                settings.playqueue.extend(result[0:15])
+            else:
+                settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
@@ -219,10 +228,10 @@ async def search_music(msg: Message, *args):
                 this_item_str = f"<{index + 1}> {this_item.name} - {this_item.author} \n"
                 select_menu_msg += this_item_str
             select_menu_msg += "\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)"
-            await msg.channel.send(select_menu_msg)
+            await msg.reply(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name="select", aliases=["pick", "选择", "选"])
 @log(command="select")
@@ -284,22 +293,17 @@ async def cut_music(msg: Message):
         if len(play_list) == 1:
             await msg.channel.send("正在切歌，请稍候")
             settings.playqueue.popleft()
-            await stop_container(settings.container_name)
+            await container_handler.stop_container()
             await msg.channel.send("后面没歌了哦")
             settings.played = 0
         else:
             await msg.channel.send("正在切歌，请稍候")
             settings.playqueue.popleft()
-            await stop_container(settings.container_name)
             next_music = settings.playqueue[0]
-            await stop_container(settings.container_name)
-            await create_container(settings.token, settings.channel, next_music.source, "false", settings.container_name)
-
-            current_music = settings.playqueue.popleft()
-            current_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + current_music.duration
-            settings.playqueue.appendleft(current_music)
-
+            next_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + next_music.duration
             await msg.channel.send(f"正在为您播放 {next_music.name} - {next_music.author}")
+            await container_handler.create_container(next_music.source)
+
             settings.played = 5000
 
 @bot.command(name="remove", aliases=["rm", "删除", "删"])
@@ -339,7 +343,7 @@ async def clear_playlist(msg: Message):
         else:
             await msg.channel.send("正在清空播放列表，请稍候")
             settings.playqueue.clear()
-            await stop_container(settings.container_name)
+            await container_handler.stop_container()
             await msg.channel.send("播放列表已清空")
             settings.played = 0
     else:
@@ -395,10 +399,10 @@ async def search_osu(msg: Message, *args):
             select_menu_msg = '已搜索到以下结果\n' + \
                 '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
                 '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.channel.send(select_menu_msg)
+            await msg.reply(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
 @log(command="msearch")
@@ -423,12 +427,11 @@ async def search_migu(msg: Message, *args):
             select_menu_msg = '已搜索到以下结果\n' + \
                 '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
                 '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.channel.send(select_menu_msg)
+            await msg.reply(select_menu_msg)
 
         else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
 
-"""            
 @bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
 @log(command="qsearch")
 @ban
@@ -438,7 +441,7 @@ async def search_qq(msg: Message, *args):
     if not keyword:
         raise Exception("格式输入有误。\n正确格式为: /msearch {keyword} 或 /搜咪咕 {keyword}")
     else:
-        candidates = await qsearch_music_by_keyword(keyword)
+        candidates = await qsearch_music_by_keyword(bot, keyword)
         if candidates:
             author_id = msg.author.id
             expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
@@ -456,21 +459,20 @@ async def search_qq(msg: Message, *args):
 
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
-"""
 
 @bot.command(name="pause", aliases=["暂停"])
 @log(command="pause")
 @ban
 @warn
 async def pause(msg: Message):
-    await pause_container(settings.container_name)
+    await container_handler.pause_container()
 
 @bot.command(name="unpause", aliases=["取消暂停", "继续"])
 @log(command="unpause")
 @ban
 @warn
 async def unpause(msg: Message):
-    await unpause_container(settings.container_name)
+    await container_handler.unpause_container()
 
 """
 @bot.command(name="stop", aliases=["停止", "结束"])
@@ -535,6 +537,12 @@ async def logout(msg: Message):
         await msg.channel.send("permission denied")
 
 
+# startup events
+@bot.task.add_date()
+async def startup_tasks():
+    await container_handler.clear_leaked_containers()
+
+
 # repeated tasks
 @bot.task.add_interval(seconds=5)
 async def five_seconds_interval_tasks():
@@ -552,6 +560,10 @@ async def one_minutes_interval_tasks():
 async def three_minutes_interval_tasks():
     await update_kanban_info(bot=bot)
     # await update_playing_game_status(bot=bot)
+
+@bot.task.add_interval(minutes=20)
+async def twenty_minutes_interval_tasks():
+    await keep_bot_market_heart_beat()
 
 # buttons reflection event, WIP
 from khl import Event,EventTypes

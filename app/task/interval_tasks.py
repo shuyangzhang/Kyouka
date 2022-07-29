@@ -7,7 +7,7 @@ from khl import Bot
 from app.config.common import settings
 from app.utils.channel_utils import update_channel_name_by_bot
 from app.utils.playing_utils import set_playing_game_status_by_bot, BUSY_STATUS_GAME_ID, FREE_STATUS_GAME_ID
-from app.voice_utils.container_handler import create_container, stop_container
+from app.voice_utils.container_async_handler import container_handler
 from app.music.bilibili.search import BPROXY_API
 
 
@@ -29,9 +29,7 @@ async def update_played_time_and_change_music():
             else:
                 first_music = settings.playqueue[0]
                 if settings.played == 0:
-                    await stop_container(settings.container_name)
-                    await create_container(settings.token, settings.channel, first_music.source, 'false',
-                                           settings.container_name)
+                    await container_handler.create_container(first_music.source)
 
                     first_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + first_music.duration
 
@@ -47,15 +45,13 @@ async def update_played_time_and_change_music():
                     else:
                         settings.playqueue.popleft()
                         if len(settings.playqueue) == 0:
-                            await stop_container(settings.container_name)
+                            await container_handler.stop_container()
                             settings.played = 0
                             settings.lock = False
                             return None
                         else:
                             next_music = settings.playqueue[0]
-                            await stop_container(settings.container_name)
-                            await create_container(settings.token, settings.channel, next_music.source, 'false',
-                                                   settings.container_name)
+                            await container_handler.create_container(next_music.source)
 
                             next_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + next_music.duration
 
@@ -118,3 +114,26 @@ async def update_playing_game_status(bot: Bot):
         logger.info(f"playing status is updated to {game_status_id} successfully.(busy is {BUSY_STATUS_GAME_ID}, free is {FREE_STATUS_GAME_ID})")
     except Exception as e:
         logger.error(f"failed to update playing status, error msg: {e}, traceback: {traceback.format_exc()}")
+
+async def keep_bot_market_heart_beat():
+    try:
+        bot_market_url = "https://bot.gekj.net/api/v1/online.bot"
+        
+        if not settings.bot_market_heart_beat:
+            logger.info(f"bot market heart beat switch is off, nothing happened")
+        else:
+            headers = {
+                "uuid": settings.bot_market_uuid
+            }
+            async with aiohttp.ClientSession() as session:
+                async with session.get(bot_market_url, headers=headers) as r:
+                    resp_json = await r.json()
+                    code = resp_json.get("code", -1)
+                    msg = resp_json.get("msg", "no message received")
+                    if code == 0:
+                        logger.info(f"keep bot alive at bot market succeed, msg is {msg}")
+                    else:
+                        logger.error(f"failed to keep bot alive at bot market, msg is : {msg}")
+
+    except Exception as e:
+        logger.error(f"failed to keep bot alive at bot market, error msg: {e}, traceback: {traceback.format_exc()}")
