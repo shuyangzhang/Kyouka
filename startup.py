@@ -1,4 +1,4 @@
-from app.main import bot
+from app.bot import bot
 
 
 if __name__ == "__main__":
