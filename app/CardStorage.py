@@ -1,7 +1,5 @@
 import datetime
-from tkinter import Image
 
-from typing import Dict
 from khl.card import Card
 from khl.card.module import Module
 from khl.card.interface import Types, _Module
