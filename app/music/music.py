@@ -8,7 +8,7 @@ class Music:
         self.source = source
         self.duration = duration
         self.endtime = -1
-        self.album = album if album else '未知专辑'
+        self.album = album
         self.cover_url = cover_url if cover_url else 'https://img.kookapp.cn/assets/2022-07/2rM6IYtAu53uw3uw.png'
         self.website = website
 
