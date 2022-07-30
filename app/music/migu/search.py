@@ -33,7 +33,7 @@ async def msearch_music_by_keyword(music_name: str, limit: int=5) -> list[Music]
                 
                 musiclist = resp_json.get('musics', [])
 
-                while musiclist and len(candidates) <= limit:
+                while musiclist and len(candidates) < limit:
                     music: dict = musiclist.pop(0)
                     music_id = music.get('copyrightId')
                     name = music.get('songName', '未知')
