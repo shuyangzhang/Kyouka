@@ -698,7 +698,10 @@ async def msg_btn_click(b:Bot,event:Event):
 
         if not play_list_length:
             await channel.send("当前的播放列表为空哦")
-            await message.delete()
+            try:
+                await message.delete()
+            except:
+                pass
         elif music_number > play_list_length or now_time > end_time:
             await update_cardmessage(bot, msg_id, str(list(CardMessage(*CS.MusicListCard(play_list)))).replace("'", '"'))
         else:
