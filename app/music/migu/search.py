@@ -39,6 +39,7 @@ async def msearch_music_by_keyword(music_name: str, limit: int=5) -> list[Music]
                     name = music.get('songName', '未知')
                     artist = music.get('artist', '未知歌手')
                     album = music.get('albumName', '未知专辑')
+                    if not album: album = '未知专辑'
                     cover_image_url = music.get('cover', '')
                     if music['mp3']:
                         source = music.get('mp3', '')
