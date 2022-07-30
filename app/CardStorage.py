@@ -126,6 +126,9 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 ]
     :return:
     """
+    first_music = music_list[0]
+    end_time_int = first_music.endtime
+    end_time = datetime.datetime.fromtimestamp(end_time_int / 1e3) if end_time_int != -1 else datetime.datetime.now()
 
     # 剩余列表
     remaining_list_card = Card(theme=Types.Theme.SECONDARY)
@@ -141,7 +144,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
                     f"**({index + 2})    {one_music_des.name} - {one_music_des.author}**",
                     type=Types.Text.KMD
                 ),
-                accessory=Element.Button('删除', f"remove:{index+2}:-1", theme=Types.Theme.DANGER)
+                accessory=Element.Button('删除', f"remove:{index+2}:{end_time}", theme=Types.Theme.DANGER)
             )
         )
         remaining_list_card.append(
@@ -273,5 +276,32 @@ def pickCard(music: Music) -> Card:
             mode=Types.SectionMode.RIGHT
         )
     )
+
+    return card
+
+def topCard(music_list: list[Music]) -> Card:
+    card = Card(theme=Types.Theme.SECONDARY)
+    card.append(
+        Module.Header(f"置顶")
+    )
+    for index, one_music_des in enumerate(music_list):
+        image_url = one_music_des.cover_url
+        card.append(Module.Divider())
+        card.append(
+            Module.Section(
+                Element.Text(
+                    f"**({index + 2})    {one_music_des.name} - {one_music_des.author}**",
+                    type=Types.Text.KMD
+                ),
+                accessory=Element.Button('置顶', f"top:{index+2}:-1", theme=Types.Theme.INFO)
+            )
+        )
+        card.append(
+            Module.Context(
+                Element.Image(image_url),
+                Element.Text(f' | 来源：{ASSETS[one_music_des.website]["text"]} '),
+                Element.Image(ASSETS[one_music_des.website]['icon'])
+            )
+        )
 
     return card

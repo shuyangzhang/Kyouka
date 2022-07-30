@@ -531,26 +531,26 @@ async def clear_playlist(msg: Message):
 @warn
 @gate_getter
 async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
-    music_number = int(music_number)
+    play_list = list(settings.playqueue)
+    play_list_length = len(play_list)
+    if not play_list_length:
+        raise Exception("播放列表中没有任何歌曲哦")
+
     if not music_number:
-        raise Exception("格式输入有误。\n正确格式为: /top {list_number} 或 /顶 {list_number}")
+        await msg.channel.send(CardMessage(CS.topCard(play_list[1:])))
     else:
-        play_list_length = len(settings.playqueue)
-        if not play_list_length:
-            raise Exception("播放列表中没有任何歌曲哦")
+        music_number = int(music_number)
+        if music_number == 1:
+            raise Exception("不能置顶正在播放的音乐, 它不是已经在播放了吗?")
+        elif music_number > play_list_length:
+            raise Exception(f"列表中一共只有 {play_list_length} 首歌, 你不能置顶第 {music_number} 首歌")
+        elif music_number <= 0:
+            raise Exception(f"输入不合法, 请不要输入0或者负数")
         else:
-            if music_number == 1:
-                raise Exception("不能置顶正在播放的音乐, 它不是已经在播放了吗?")
-            elif music_number > play_list_length:
-                raise Exception(f"列表中一共只有 {play_list_length} 首歌, 你不能置顶第 {music_number} 首歌")
-            elif music_number <= 0:
-                raise Exception(f"输入不合法, 请不要输入0或者负数")
-            else:
-                play_list = list(settings.playqueue)
-                to_top_music = play_list[music_number - 1]
-                del settings.playqueue[music_number - 1]
-                settings.playqueue.insert(1, to_top_music)
-                await msg.channel.send(f"已将歌曲 {to_top_music.name}-{to_top_music.author} 在播放列表中置顶")
+            to_top_music = play_list[music_number - 1]
+            del settings.playqueue[music_number - 1]
+            settings.playqueue.insert(1, to_top_music)
+            await msg.channel.send(f"已将歌曲 {to_top_music.name}-{to_top_music.author} 在播放列表中置顶")
 
 
 @bot.command(name="pause", aliases=["暂停"])
@@ -724,6 +724,19 @@ async def msg_btn_click(b:Bot,event:Event):
             settings.candidates_map.pop(user_id, None)
             settings.playqueue.append(selected_music)
             await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.pickCard(selected_music)))).replace("'", '"'))
+
+    elif action == 'top':
+        top_number = int(args[0])
+        
+        if top_number > play_list_length:
+            await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.topCard(play_list[1:])))).replace("'", '"'))
+        else:
+            to_top_music = play_list[top_number - 1]
+            del settings.playqueue[top_number - 1]
+            settings.playqueue.insert(1, to_top_music)
+            new_play_list = list(settings.playqueue)
+            await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.topCard(new_play_list[1:])))).replace("'", '"'))
+
 
     '''
     elif action == 'cut':
