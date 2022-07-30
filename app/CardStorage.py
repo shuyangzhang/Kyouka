@@ -19,51 +19,53 @@ __MUSIC_LIST_TILE_COLOR = "#9b59b6"
 __MUSIC_LIST_PLAYING_MUSIC_COLOR = "#a29bfe"
 
 
+NO_COVER_URL = 'https://img.kookapp.cn/assets/2022-07/2rM6IYtAu53uw3uw.png'
+
 ASSETS = {
-    'netease_radio': ['https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png', '网易云音乐'],
-    'netease': ['https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png', '网易云音乐'],
-    'qqmusic': ['https://img.kookapp.cn/assets/2022-07/VLtsP2quEZ00w00w.png', 'QQ音乐'],
-    'migu': ['https://img.kookapp.cn/assets/2022-07/2VklLsY5XP01s01s.png', '咪咕音乐'],
-    'bili': ['https://img.kookapp.cn/assets/2022-07/SZQ8mFm2Q700w00w.png', '哔哩哔哩'],
-    'osu': ['https://img.kookapp.cn/assets/2022-07/vSPG7hAPrZ00w00w.png', 'osu!']
+    'netease_radio': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png',
+        'text': '网易云音乐',
+        'url': '',
+        'color': ''
+    },
+    'netease': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png',
+        'text': '网易云音乐',
+        'url': 'https://music.163.com/#/song?id={}',
+        'color': 'dd001a'
+    },
+    'qqmusic': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/VLtsP2quEZ00w00w.png',
+        'text': 'QQ音乐',
+        'url': 'https://y.qq.com/n/ryqq/songDetail/{}',
+        'color': 'ffdc01'
+    },
+    'migu': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/2VklLsY5XP01s01s.png',
+        'text': '咪咕音乐',
+        'url': 'https://music.migu.cn/v3/music/song/{}',
+        'color': '#ed3c65'
+    },
+    'bili': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/SZQ8mFm2Q700w00w.png',
+        'text': '哔哩哔哩',
+        'url': 'https://www.bilibili.com/video/{}',
+        'color': ''
+    },
+    'osu': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/vSPG7hAPrZ00w00w.png',
+        'text': 'osu!',
+        'url': 'https://osu.ppy.sh/beatmapsets/{}',
+        'color': '#e3609a'
+    }
 }
-
-NETEASE_MUSIC = 'https://music.163.com/#/song?id={}'
-QQ_MUSIC = 'https://y.qq.com/n/ryqq/songDetail/{}'
-MIGU_MUSIC = 'https://music.migu.cn/v3/music/song/{}'
-BILIBILI = 'https://www.bilibili.com/video/{}'
-OSU = 'https://osu.ppy.sh/beatmapsets/{}'
-
-
-class InviteModule(_Module):
-    _tyep = "invite"
-
-    def __init__ (self):
-        super().__init__(Types.Theme.NA, Types.Size.NA)
-
-    @property
-    def _repr(self) -> Dict:
-        return {
-            "type": "invite",
-            "code": "https://kaihei.co/oHRMIL"
-        }
 
 
 def NowMusicCard(music_list: list[Music]) -> Card:
     # playing music card
     first_music = music_list[0]
-    text = ASSETS[first_music.website][1]
-    url = ''
-    if first_music.website == 'netease':
-        url = NETEASE_MUSIC.format(first_music.music_id)
-    elif first_music.website == 'qqmusic':
-        url = QQ_MUSIC.format(first_music.music_id)
-    elif first_music.website == 'migu':
-        url = MIGU_MUSIC.format(first_music.music_id)
-    elif first_music.website == 'bili':
-        url = BILIBILI.format(first_music.music_id)
-    elif first_music.website == 'osu':
-        url = OSU.format(first_music.music_id)
+    text = ASSETS[first_music.website]['text']
+    url = ASSETS[first_music.website]['url']
 
     if text and url:
         source_url = f'[{text}]({url})'
@@ -86,7 +88,7 @@ def NowMusicCard(music_list: list[Music]) -> Card:
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg",
+                src = image_url if image_url!="" else NO_COVER_URL,
                 size= Types.Size.SM
             ),
             mode=Types.SectionMode.RIGHT
@@ -105,19 +107,6 @@ def NowMusicCard(music_list: list[Music]) -> Card:
             start=start_time,
         )
     )
-
-    # cut button
-    """
-    playing_music_card.append(
-        Module.ActionGroup(
-            Element.Button(
-                text = "               切歌               ",
-                value='cut:',
-                theme=Types.Theme.PRIMARY
-            )
-        )
-    )
-    """
 
     return playing_music_card
 
@@ -154,26 +143,10 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
         remaining_list_card.append(
             Module.Context(
                 Element.Image(image_url),
-                Element.Text(f' | 来源：{ASSETS[one_music_des.website][1]} '),
-                Element.Image(ASSETS[one_music_des.website][0])
+                Element.Text(f' | 来源：{ASSETS[one_music_des.website]["icon"]} '),
+                Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
-        """
-        remaining_list_card.append(
-            Module.ActionGroup(
-                Element.Button(
-                    text = "置顶",
-                    value= f"top:{index+2}",
-                    theme=Types.Theme.PRIMARY
-                ),
-                Element.Button(
-                    text = "删除",
-                    value= f"remove:{index+2}",
-                    theme=Types.Theme.DANGER
-                )
-            )
-        )
-        """
 
     return NowMusicCard(music_list), remaining_list_card
 
@@ -225,7 +198,8 @@ def HelpCard() -> Card:
     )
 
     card.append(
-        InviteModule()
+        # InviteModule()
+        Module.Invite('oHRMIL')
     )
 
     card.append(
@@ -241,3 +215,35 @@ def HelpCard() -> Card:
     )
 
     return card
+
+def searchCard(music_dict: dict) -> Card:
+    return_card = []
+    music_list: list[Music] = []
+    for value in music_dict.values():
+        music_list += value
+
+    for key in music_dict.keys():
+        card = Card(color=Color(hex=ASSETS[key]['color']))
+        search_list: list[Music] = music_dict[key]
+        for music in search_list:
+            card.append(
+                Module.Section(
+                    Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
+                    Element.Button('点歌', f'pick:{str(music_list.index(music))}', theme=Types.Theme.SUCCESS)
+                    )
+                )
+            card.append(Module.Context(
+                Element.Image(music.cover_url),
+                Element.Text(f' {music.album}')
+            ))
+            card.append(Module.Divider())
+        card.append(
+            Module.Context(
+                Element.Text(f'来自*{ASSETS[key]["text"]}* ', Types.Text.KMD),
+                Element.Image(ASSETS[key]["icon"]),
+                Element.Text('\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)')
+            )
+        )
+        return_card.append(card)
+
+    return tuple(card for card in return_card)
