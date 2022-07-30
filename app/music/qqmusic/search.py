@@ -65,7 +65,8 @@ async def handle_informations(bot: Bot, matched: list):
 async def qsearch_music_by_keyword(bot, songName):
     matched = await get_song_mid(songName)
     if isinstance(matched, int):
-        raise Exception(f'qq音乐搜索失败({matched})')
+        # raise Exception(f'qq音乐搜索失败({matched})')
+        return []
     return (await handle_informations(bot, matched))
 
 

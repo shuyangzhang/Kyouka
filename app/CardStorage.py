@@ -232,26 +232,27 @@ def searchCard(music_dict: dict) -> Card:
     for key in music_dict.keys():
         card = Card(color=Color(hex=ASSETS[key]['color']))
         search_list: list[Music] = music_dict[key]
-        for music in search_list:
-            card.append(
-                Module.Section(
-                    Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
-                    Element.Button('点歌', f'pick:{str(music_list.index(music))}:{end_time}', theme=Types.Theme.SUCCESS)
+        if search_list:
+            for music in search_list:
+                card.append(
+                    Module.Section(
+                        Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
+                        Element.Button('点歌', f'pick:{str(music_list.index(music))}:{end_time}', theme=Types.Theme.SUCCESS)
+                        )
                     )
+                card.append(Module.Context(
+                    Element.Image(music.cover_url),
+                    Element.Text(f' {music.album}')
+                ))
+                card.append(Module.Divider())
+            card.append(
+                Module.Context(
+                    Element.Text(f'来自*{ASSETS[key]["text"]}* ', Types.Text.KMD),
+                    Element.Image(ASSETS[key]["icon"]),
+                    Element.Text('\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)')
                 )
-            card.append(Module.Context(
-                Element.Image(music.cover_url),
-                Element.Text(f' {music.album}')
-            ))
-            card.append(Module.Divider())
-        card.append(
-            Module.Context(
-                Element.Text(f'来自*{ASSETS[key]["text"]}* ', Types.Text.KMD),
-                Element.Image(ASSETS[key]["icon"]),
-                Element.Text('\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)')
             )
-        )
-        return_card.append(card)
+            return_card.append(card)
 
     return (card for card in return_card)
 
