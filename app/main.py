@@ -32,21 +32,11 @@ if settings.file_logger:
     logger.add(f"{settings.container_name}.log", rotation="1 week")
 
 # bot = Bot(token=settings.token)
-gate = None
-def gate_getter(func):
-    async def wapper(msg: Message, *args, **kwargs):
-        global gate
-        if not gate:
-            gate = msg.gate
-
-        await func(msg, *args, **kwargs)
-
-    return wapper
+gate = bot.client.gate
 
 
 @bot.command(name="ping")
 @log(command="ping")
-@gate_getter
 async def ping(msg: Message):
     await msg.channel.send("コスモブルーフラッシュ！")
     logger.success(f"log_id: {msg.ctx.log_id} recieved")
@@ -54,21 +44,18 @@ async def ping(msg: Message):
 
 @bot.command(name="version")
 @log(command="version")
-@gate_getter
 async def version(msg: Message):
     await msg.channel.send(f"Version number: {__version__}")
 
 
 @bot.command(name="help", aliases=["帮助", "文档", "手册", "说明", "示例", "命令", "?", "？"])
 @log(command="help")
-@gate_getter
 async def help(msg: Message):
     await msg.channel.send(CardMessage(CS.HelpCard()))
 
 
 @bot.command(name="debug")
 @log(command="debug")
-@gate_getter
 async def debug(msg: Message):
     if msg.author.id in settings.admin_users:
         settings.debug = not settings.debug
@@ -84,7 +71,6 @@ async def debug(msg: Message):
 @log(command="channel")
 @ban
 @warn
-@gate_getter
 async def update_voice_channel(msg: Message, channel_id: str=""):
     if not channel_id:
         raise Exception("输入格式有误。\n正确格式为: /channel {channel_id} 或 /频道 {channel_id}")
@@ -97,7 +83,6 @@ async def update_voice_channel(msg: Message, channel_id: str=""):
 @log(command="comehere")
 @ban
 @warn
-@gate_getter
 async def come_to_my_voice_channel(msg: Message):
     guild_id = msg.ctx.guild.id
     author_id = msg.author.id
@@ -116,7 +101,6 @@ async def come_to_my_voice_channel(msg: Message):
 @log(command="play")
 @ban
 @warn
-@gate_getter
 async def play_music(msg: Message, *args):
     music_name = " ".join(args)
     if not music_name:
@@ -134,7 +118,6 @@ async def play_music(msg: Message, *args):
 @log(command="playlist")
 @ban
 @warn
-@gate_getter
 async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
         raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
@@ -161,7 +144,6 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
 @log(command='album')
 @ban
 @warn
-@gate_getter
 async def import_music_by_album(msg: Message, album_url: str=''):
     if not album_url:
         raise Exception('输入格式有误。\n正确格式为: /album {album_url} 或 /电台 {album_url}')
@@ -188,7 +170,6 @@ async def import_music_by_album(msg: Message, album_url: str=''):
 @log(command='radio')
 @ban
 @warn
-@gate_getter
 async def import_music_by_radio(msg: Message, radio_url: str = ''):
     if not radio_url:
         raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
@@ -215,7 +196,6 @@ async def import_music_by_radio(msg: Message, radio_url: str = ''):
 @log(command="bilibili")
 @ban
 @warn
-@gate_getter
 async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
     if not bilibili_url:
         raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
@@ -238,7 +218,6 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
 @log(command="search")
 @ban
 @warn
-@gate_getter
 async def search_music(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
@@ -290,7 +269,6 @@ async def search_music(msg: Message, *args):
 @log(command="wsearch")
 @ban
 @warn
-@gate_getter
 async def search_netease(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
@@ -319,7 +297,6 @@ async def search_netease(msg: Message, *args):
 @log(command="osearch")
 @ban
 @warn
-@gate_getter
 async def search_osu(msg: Message, *args):
     keyword = ' '.join(args)
     if not keyword:
@@ -347,7 +324,6 @@ async def search_osu(msg: Message, *args):
 @log(command="msearch")
 @ban
 @warn
-@gate_getter
 async def search_migu(msg: Message, *args):
     keyword = ' '.join(args)
     if not keyword:
@@ -375,7 +351,6 @@ async def search_migu(msg: Message, *args):
 @log(command="qsearch")
 @ban
 @warn
-@gate_getter
 async def search_qq(msg: Message, *args):
     keyword = ' '.join(args)
     if not keyword:
@@ -403,7 +378,6 @@ async def search_qq(msg: Message, *args):
 @log(command="select")
 @ban
 @warn
-@gate_getter
 async def select_candidate(msg: Message, candidate_num: str=""):
     candidate_num = int(candidate_num)
     if not candidate_num:
@@ -428,7 +402,6 @@ async def select_candidate(msg: Message, candidate_num: str=""):
 
 @bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
 @log(command="list")
-@gate_getter
 async def play_list(msg: Message):
     play_list = list(settings.playqueue)
     if not play_list:
@@ -455,7 +428,6 @@ async def play_list(msg: Message):
 @log(command="cut")
 @ban
 @warn
-@gate_getter
 async def cut_music(msg: Message):
     play_list = list(settings.playqueue)
     if not play_list:
@@ -482,7 +454,6 @@ async def cut_music(msg: Message):
 @log(command="remove")
 @ban
 @warn
-@gate_getter
 async def remove_music_in_play_list(msg: Message, music_number: str=""):
     music_number = int(music_number)
     if not music_number:
@@ -509,7 +480,6 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
 @log(command='clear')
 @ban
 @warn
-@gate_getter
 async def clear_playlist(msg: Message):
     if msg.author.id in settings.admin_users:
         length = len(settings.playqueue)
@@ -529,7 +499,6 @@ async def clear_playlist(msg: Message):
 @log(command="top")
 @ban
 @warn
-@gate_getter
 async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
     play_list = list(settings.playqueue)
     play_list_length = len(play_list)
@@ -557,7 +526,6 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
 @log(command="pause")
 @ban
 @warn
-@gate_getter
 async def pause(msg: Message):
     await container_handler.pause_container()
 
@@ -566,7 +534,6 @@ async def pause(msg: Message):
 @log(command="unpause")
 @ban
 @warn
-@gate_getter
 async def unpause(msg: Message):
     await container_handler.unpause_container()
 
@@ -581,7 +548,6 @@ async def stop_music(msg: Message):
 
 @bot.command(name="warn")
 @log(command="warn")
-@gate_getter
 async def operate_warned_user_list(msg: Message, action: str="", user_id: str=""):
     if msg.author.id in settings.admin_users:
         if action not in ["add", "remove", "list", "rm", "ls"]:
@@ -606,7 +572,6 @@ async def operate_warned_user_list(msg: Message, action: str="", user_id: str=""
 
 @bot.command(name="ban")
 @log(command="ban")
-@gate_getter
 async def operate_banned_user_list(msg: Message, action: str="", user_id: str=""):
     if msg.author.id in settings.admin_users:
         if action not in ["add", "remove", "list", "rm", "ls"]:
@@ -631,7 +596,6 @@ async def operate_banned_user_list(msg: Message, action: str="", user_id: str=""
 
 @bot.command(name="logout")
 @log(command="logout")
-@gate_getter
 async def logout(msg: Message):
     if msg.author.id in settings.admin_users:
         await msg.channel.send("logging out now...")
