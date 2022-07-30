@@ -1,4 +1,5 @@
 import datetime
+from tkinter import Image
 
 from typing import Dict
 from khl.card import Card
@@ -18,6 +19,22 @@ __MUSIC_LIST_TILE_COLOR = "#9b59b6"
 __MUSIC_LIST_PLAYING_MUSIC_COLOR = "#a29bfe"
 
 
+ASSETS = {
+    'netease_radio': ['https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png', '网易云音乐'],
+    'netease': ['https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png', '网易云音乐'],
+    'qqmusic': ['https://img.kookapp.cn/assets/2022-07/VLtsP2quEZ00w00w.png', 'QQ音乐'],
+    'migu': ['https://img.kookapp.cn/assets/2022-07/2VklLsY5XP01s01s.png', '咪咕音乐'],
+    'bili': ['https://img.kookapp.cn/assets/2022-07/SZQ8mFm2Q700w00w.png', '哔哩哔哩'],
+    'osu': ['https://img.kookapp.cn/assets/2022-07/vSPG7hAPrZ00w00w.png', 'osu!']
+}
+
+NETEASE_MUSIC = 'https://music.163.com/#/song?id={}'
+QQ_MUSIC = 'https://y.qq.com/n/ryqq/songDetail/{}'
+MIGU_MUSIC = 'https://music.migu.cn/v3/music/song/{}'
+BILIBILI = 'https://www.bilibili.com/video/{}'
+OSU = 'https://osu.ppy.sh/beatmapsets/{}'
+
+
 class InviteModule(_Module):
     _tyep = "invite"
 
@@ -35,19 +52,42 @@ class InviteModule(_Module):
 def NowMusicCard(music_list: list[Music]) -> Card:
     # playing music card
     first_music = music_list[0]
+    text = ASSETS[first_music.website][1]
+    url = ''
+    if first_music.website == 'netease':
+        url = NETEASE_MUSIC.format(first_music.music_id)
+    elif first_music.website == 'qqmusic':
+        url = QQ_MUSIC.format(first_music.music_id)
+    elif first_music.website == 'migu':
+        url = MIGU_MUSIC.format(first_music.music_id)
+    elif first_music.website == 'bili':
+        url = BILIBILI.format(first_music.music_id)
+    elif first_music.website == 'osu':
+        url = OSU.format(first_music.music_id)
+
+    if text and url:
+        source_url = f'[{text}]({url})'
+    elif text and not url:
+        # netease radio
+        source_url = text
+    else:
+        source_url = ''
+
     playing_music_card = Card(theme=Types.Theme.INFO, color=Color(hex=__MUSIC_LIST_PLAYING_MUSIC_COLOR))
     playing_music_card.append(
         Module.Header(f":notes:  当前歌曲")
     )
+    playing_music_card.append(Module.Divider())
     image_url = first_music.cover_url
     playing_music_card.append(
         Module.Section(
             Element.Text(
-                f"**  {first_music.name}  -  {first_music.author}**",
+                f"**{first_music.name}  -  {first_music.author}**\n{f'专辑：{first_music.album}' if first_music.album else ''}\n来源：{source_url}",
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+                src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg",
+                size= Types.Size.SM
             ),
             mode=Types.SectionMode.RIGHT
         )
@@ -101,16 +141,21 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
     )
     for index,one_music_des in enumerate( music_list[1:]):
         image_url = one_music_des.cover_url
+        remaining_list_card.append(Module.Divider())
         remaining_list_card.append(
             Module.Section(
                 Element.Text(
-                    f"**    ({index + 2})    {one_music_des.name} - {one_music_des.author}**",
+                    f"**({index + 2})    {one_music_des.name} - {one_music_des.author}**",
                     type=Types.Text.KMD
                 ),
-                accessory=Element.Image(
-                    src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
-                ),
-                mode=Types.SectionMode.LEFT
+                accessory=Element.Button('删除', f"remove:{index+2}", theme=Types.Theme.DANGER)
+            )
+        )
+        remaining_list_card.append(
+            Module.Context(
+                Element.Image(image_url),
+                Element.Text(f' | 来源：{ASSETS[one_music_des.website][1]} '),
+                Element.Image(ASSETS[one_music_des.website][0])
             )
         )
         """
@@ -129,7 +174,6 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
             )
         )
         """
-        remaining_list_card.append(Module.Divider())
 
     return NowMusicCard(music_list), remaining_list_card
 
