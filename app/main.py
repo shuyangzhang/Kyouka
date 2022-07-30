@@ -2,7 +2,7 @@ import re
 import datetime
 
 from loguru import logger
-from khl import Message, Bot
+from khl import Message, Bot, PublicMessage
 from khl.card import CardMessage
 from app.bot import bot
 from app.config.common import settings
@@ -19,6 +19,7 @@ from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator_factory as log
 from app.utils.permission_utils import warn_decorator as warn
 from app.utils.permission_utils import ban_decorator as ban
+from app.utils.message_utils import update_cardmessage_by_bot as update_cardmessage
 from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info, update_playing_game_status, keep_bot_market_heart_beat
 
 import app.CardStorage as CS
@@ -31,25 +32,43 @@ if settings.file_logger:
     logger.add(f"{settings.container_name}.log", rotation="1 week")
 
 # bot = Bot(token=settings.token)
+gate = None
+def gate_getter(func):
+    async def wapper(msg: Message, *args, **kwargs):
+        global gate
+        if not gate:
+            gate = msg.gate
+
+        await func(msg, *args, **kwargs)
+
+    return wapper
+
 
 @bot.command(name="ping")
 @log(command="ping")
+@gate_getter
 async def ping(msg: Message):
     await msg.channel.send("コスモブルーフラッシュ！")
     logger.success(f"log_id: {msg.ctx.log_id} recieved")
 
+
 @bot.command(name="version")
 @log(command="version")
+@gate_getter
 async def version(msg: Message):
     await msg.channel.send(f"Version number: {__version__}")
 
+
 @bot.command(name="help", aliases=["帮助", "文档", "手册", "说明", "示例", "命令", "?", "？"])
 @log(command="help")
+@gate_getter
 async def help(msg: Message):
     await msg.channel.send(CardMessage(CS.HelpCard()))
 
+
 @bot.command(name="debug")
 @log(command="debug")
+@gate_getter
 async def debug(msg: Message):
     if msg.author.id in settings.admin_users:
         settings.debug = not settings.debug
@@ -60,10 +79,12 @@ async def debug(msg: Message):
     else:
         await msg.channel.send("permission denied")
 
+
 @bot.command(name="channel", aliases=["频道", "语音频道"])
 @log(command="channel")
 @ban
 @warn
+@gate_getter
 async def update_voice_channel(msg: Message, channel_id: str=""):
     if not channel_id:
         raise Exception("输入格式有误。\n正确格式为: /channel {channel_id} 或 /频道 {channel_id}")
@@ -71,10 +92,12 @@ async def update_voice_channel(msg: Message, channel_id: str=""):
         settings.channel = channel_id
         await msg.channel.send(f"语音频道更新为: {settings.channel}")
 
+
 @bot.command(name="comehere", aliases=["来", "来我频道", "come"])
 @log(command="comehere")
 @ban
 @warn
+@gate_getter
 async def come_to_my_voice_channel(msg: Message):
     guild_id = msg.ctx.guild.id
     author_id = msg.author.id
@@ -88,10 +111,12 @@ async def come_to_my_voice_channel(msg: Message):
 
     await bot.command.get("channel").handler(msg, author_voice_channel_id)
 
+
 @bot.command(name="play", aliases=["点歌"])
 @log(command="play")
 @ban
 @warn
+@gate_getter
 async def play_music(msg: Message, *args):
     music_name = " ".join(args)
     if not music_name:
@@ -104,10 +129,12 @@ async def play_music(msg: Message, *args):
         else:
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
 
+
 @bot.command(name='playlist', aliases=["歌单", "导入歌单"])
 @log(command="playlist")
 @ban
 @warn
+@gate_getter
 async def import_music_by_playlist(msg: Message, playlist_url : str=""):
     if not playlist_url:
         raise Exception("输入格式有误。\n正确格式为: /playlist {playlist_url} 或 /歌单 {playlist_url}")
@@ -129,10 +156,12 @@ async def import_music_by_playlist(msg: Message, playlist_url : str=""):
                 settings.playqueue.extend(result)
     await msg.channel.send("导入成功, 输入 /list 查看播放列表")
 
+
 @bot.command(name='album', aliases=['专辑', '导入专辑'])
 @log(command='album')
 @ban
 @warn
+@gate_getter
 async def import_music_by_album(msg: Message, album_url: str=''):
     if not album_url:
         raise Exception('输入格式有误。\n正确格式为: /album {album_url} 或 /电台 {album_url}')
@@ -159,6 +188,7 @@ async def import_music_by_album(msg: Message, album_url: str=''):
 @log(command='radio')
 @ban
 @warn
+@gate_getter
 async def import_music_by_radio(msg: Message, radio_url: str = ''):
     if not radio_url:
         raise Exception('输入格式有误。\n正确格式为: /radio {radio_url} 或 /电台 {radio_url}')
@@ -180,10 +210,12 @@ async def import_music_by_radio(msg: Message, radio_url: str = ''):
                 settings.playqueue.extend(result)
     await msg.channel.send('导入成功，输入 /list 查看播放列表')
 
+
 @bot.command(name="bilibili", aliases=["bili", "bzhan", "bv", "bvid", "b站", "哔哩哔哩", "叔叔"])
 @log(command="bilibili")
 @ban
 @warn
+@gate_getter
 async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
     if not bilibili_url:
         raise Exception("输入格式有误。\n正确格式为: /bilibili {bilibili_url} 或 /bv {bilibili_url}")
@@ -206,6 +238,7 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
 @log(command="search")
 @ban
 @warn
+@gate_getter
 async def search_music(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
@@ -257,6 +290,7 @@ async def search_music(msg: Message, *args):
 @log(command="wsearch")
 @ban
 @warn
+@gate_getter
 async def search_netease(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
@@ -285,6 +319,7 @@ async def search_netease(msg: Message, *args):
 @log(command="osearch")
 @ban
 @warn
+@gate_getter
 async def search_osu(msg: Message, *args):
     keyword = ' '.join(args)
     if not keyword:
@@ -312,6 +347,7 @@ async def search_osu(msg: Message, *args):
 @log(command="msearch")
 @ban
 @warn
+@gate_getter
 async def search_migu(msg: Message, *args):
     keyword = ' '.join(args)
     if not keyword:
@@ -339,6 +375,7 @@ async def search_migu(msg: Message, *args):
 @log(command="qsearch")
 @ban
 @warn
+@gate_getter
 async def search_qq(msg: Message, *args):
     keyword = ' '.join(args)
     if not keyword:
@@ -366,6 +403,7 @@ async def search_qq(msg: Message, *args):
 @log(command="select")
 @ban
 @warn
+@gate_getter
 async def select_candidate(msg: Message, candidate_num: str=""):
     candidate_num = int(candidate_num)
     if not candidate_num:
@@ -390,6 +428,7 @@ async def select_candidate(msg: Message, candidate_num: str=""):
 
 @bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
 @log(command="list")
+@gate_getter
 async def play_list(msg: Message):
     play_list = list(settings.playqueue)
     if not play_list:
@@ -416,6 +455,7 @@ async def play_list(msg: Message):
 @log(command="cut")
 @ban
 @warn
+@gate_getter
 async def cut_music(msg: Message):
     play_list = list(settings.playqueue)
     if not play_list:
@@ -437,10 +477,12 @@ async def cut_music(msg: Message):
 
             settings.played = 5000
 
+
 @bot.command(name="remove", aliases=["rm", "删除", "删"])
 @log(command="remove")
 @ban
 @warn
+@gate_getter
 async def remove_music_in_play_list(msg: Message, music_number: str=""):
     music_number = int(music_number)
     if not music_number:
@@ -462,10 +504,12 @@ async def remove_music_in_play_list(msg: Message, music_number: str=""):
                 del settings.playqueue[music_number - 1]
                 await msg.channel.send(f"已将歌曲 {removed_music.name}-{removed_music.author} 从播放列表移除")
 
+
 @bot.command(name='clear', aliases=['清空'])
 @log(command='clear')
 @ban
 @warn
+@gate_getter
 async def clear_playlist(msg: Message):
     if msg.author.id in settings.admin_users:
         length = len(settings.playqueue)
@@ -480,10 +524,12 @@ async def clear_playlist(msg: Message):
     else:
         await msg.channel.send("permission denied")
 
+
 @bot.command(name="top", aliases=["置顶", "顶"])
 @log(command="top")
 @ban
 @warn
+@gate_getter
 async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
     music_number = int(music_number)
     if not music_number:
@@ -511,15 +557,19 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
 @log(command="pause")
 @ban
 @warn
+@gate_getter
 async def pause(msg: Message):
     await container_handler.pause_container()
+
 
 @bot.command(name="unpause", aliases=["取消暂停", "继续"])
 @log(command="unpause")
 @ban
 @warn
+@gate_getter
 async def unpause(msg: Message):
     await container_handler.unpause_container()
+
 
 """
 @bot.command(name="stop", aliases=["停止", "结束"])
@@ -528,8 +578,10 @@ async def stop_music(msg: Message):
     await stop_container(settings.container_name)
 """
 
+
 @bot.command(name="warn")
 @log(command="warn")
+@gate_getter
 async def operate_warned_user_list(msg: Message, action: str="", user_id: str=""):
     if msg.author.id in settings.admin_users:
         if action not in ["add", "remove", "list", "rm", "ls"]:
@@ -551,8 +603,10 @@ async def operate_warned_user_list(msg: Message, action: str="", user_id: str=""
     else:
         await msg.channel.send("permission denied")
 
+
 @bot.command(name="ban")
 @log(command="ban")
+@gate_getter
 async def operate_banned_user_list(msg: Message, action: str="", user_id: str=""):
     if msg.author.id in settings.admin_users:
         if action not in ["add", "remove", "list", "rm", "ls"]:
@@ -574,8 +628,10 @@ async def operate_banned_user_list(msg: Message, action: str="", user_id: str=""
     else:
         await msg.channel.send("permission denied")
 
+
 @bot.command(name="logout")
 @log(command="logout")
+@gate_getter
 async def logout(msg: Message):
     if msg.author.id in settings.admin_users:
         await msg.channel.send("logging out now...")
@@ -595,31 +651,100 @@ async def startup_tasks():
 async def five_seconds_interval_tasks():
     await update_played_time_and_change_music()
 
+
 @bot.task.add_interval(seconds=10)
 async def ten_seconds_interval_tasks():
     await clear_expired_candidates_cache()
 
+
 @bot.task.add_interval(minutes=1)
 async def one_minutes_interval_tasks():
     await keep_bproxy_alive()
+
 
 @bot.task.add_interval(minutes=3)
 async def three_minutes_interval_tasks():
     await update_kanban_info(bot=bot)
     # await update_playing_game_status(bot=bot)
 
+
 @bot.task.add_interval(minutes=20)
 async def twenty_minutes_interval_tasks():
     await keep_bot_market_heart_beat()
+
 
 # buttons reflection event, WIP
 from khl import Event,EventTypes
 @bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
 async def msg_btn_click(b:Bot,event:Event):
     channel = await b.fetch_public_channel(event.body['target_id'])
+    msg_id = event.body['msg_id']
+    user_id = event.body['user_id']
+    message = PublicMessage(
+        msg_id=msg_id,
+        _gate_=gate,
+        target_id=event.body['target_id'],
+        extra={'guild_id': event.body['guild_id'], 'channel_name': '', 'author': {'id': user_id}})
     value = event.body['value']
-    action, *args = (value.split(":"))
-    await channel.send(f"action:{action} arg:{args}")
+
+    now_time = str(datetime.datetime.now()).replace(':', '-')
+    action, *args, end_time = (value.split(":"))
+
+    play_list = list(settings.playqueue)
+    play_list_length = len(play_list)
+
+    if action == 'remove':
+        music_number = int(args[0])
+
+        if not play_list_length:
+            await channel.send("当前的播放列表为空哦")
+            await message.delete()
+        elif music_number > play_list_length or now_time > end_time:
+            await update_cardmessage(bot, msg_id, str(list(CardMessage(*CS.MusicListCard(play_list)))).replace("'", '"'))
+        else:
+            del settings.playqueue[music_number - 1]
+            new_play_list = list(settings.playqueue)
+            await update_cardmessage(bot, msg_id, str(list(CardMessage(*CS.MusicListCard(new_play_list)))).replace("'", '"'))
+
+    elif action == 'pick':
+        pick_number = int(args[0])
+
+        if user_id not in settings.candidates_map:
+            try:
+                await message.delete()
+            except:
+                pass
+            await channel.send('你的搜索不存在或已过期')
+        else:
+            candidates = settings.candidates_map[user_id].get("candidates")
+            selected_music = candidates[pick_number]
+            settings.candidates_map.pop(user_id, None)
+            settings.playqueue.append(selected_music)
+            await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.pickCard(selected_music)))).replace("'", '"'))
+
+    '''
+    elif action == 'cut':
+        if not play_list:
+            try:
+                await message.delete()
+            except:
+                pass
+            await channel.send('当前播放列表为空哦')
+        else:
+            settings.playqueue.popleft()
+
+            if len(play_list) == 1:
+                await container_handler.stop_container()
+                await channel.send('后面没歌了哦')
+                settings.played = 0
+            else:
+                next_music = settings.playqueue[0]
+                next_music.endtime = int(datetime.datetime.now().timestamp() * 1000) + next_music.duration
+                new_play_list = list(settings.playqueue)
+                await update_cardmessage(bot, msg_id, str(list(CardMessage(*CS.MusicListCard(new_play_list)))).replace("'", '"'))
+
+                settings.played = 5000'''
+
     # use action to do something
 
     # this function is WIP 
