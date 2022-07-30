@@ -25,3 +25,5 @@ static/
 .coverage
 coverage.xml
 htmlcov/
+
+test/

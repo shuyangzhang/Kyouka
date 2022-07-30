@@ -22,11 +22,14 @@ async def song_ids_to_instances(*song_ids: int) -> list[Music]:
             else:
                 songs = resp_json.get('songs', [])
                 return [Music(
+                    song.get('id'),
                     song.get('name'),
                     song.get('artists', [{}])[0].get('name', '未知歌手'),
                     f'{NETEASE_SOURCE_URL}?id={song.get("id")}.mp3',
                     song.get('duration', 180000),
-                    f'{song.get("album", {}).get("picUrl", "")}?param=130y130'
+                    song.get("album", {}).get("name", "未知专辑"),
+                    f'{song.get("album", {}).get("picUrl", "")}?param=130y130',
+                    'netease'
                 ) for song in songs]
 
 
@@ -44,10 +47,13 @@ async def fetch_program_details_by_id(program_id) -> Optional[Music]:
                 song = program.get('mainSong', {})
                 if song:
                     return Music(
+                        '',
                         song['name'],
                         song.get('artists', [{}])[0].get('name', '未知歌手'),
                         f'{NETEASE_SOURCE_URL}?id={song["id"]}.mp3',
                         song.get('duration', 180000),
-                        f'{program["coverUrl"]}?param=130y130'
+                        song.get("album", {}).get("name", "未知专辑"),
+                        f'{program["coverUrl"]}?param=130y130',
+                        'netease_radio'
                     )
     return None

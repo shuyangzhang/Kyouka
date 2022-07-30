@@ -46,7 +46,7 @@ async def osearch_music_by_keyword(music_name: str) -> list[Music]:
                         if audio:
                             source = SAYO_AUDIO.format(sid, audio.replace(' ', '%20'))
                             cover_image_url = SAYO_THUMB.format(sid)
-                            candidates.append(Music(name, artist, source, duration, cover_image_url))
+                            candidates.append(Music(sid, name, artist, source, duration, '', cover_image_url, 'osu'))
 
     # logger.debug(f'{[str(music) for music in candidates]}')
     return candidates

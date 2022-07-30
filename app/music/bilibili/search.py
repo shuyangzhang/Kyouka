@@ -67,7 +67,7 @@ async def bvid_to_music(BVid: str) -> Optional[Music]:
     matched, name, author, cid, duration = await fetch_basic_video_info_by_BVid(BVid=BVid)
     if matched:
         matched, source = await fetch_audio_source_by_BVid_and_cid(BVid=BVid, cid=cid)
-        ret = Music(name, author, source, duration, '')
+        ret = Music(BVid, name, author, source, duration, '', '', 'bili')
 
     logger.debug(f'FETCHED: {str(ret)}')
     return ret
@@ -86,11 +86,14 @@ async def bvid_to_music_by_bproxy(BVid: str) -> Optional[Music]:
                 data = resp_json.get("data", {})
                 if data:
                     ret = Music(
+                        BVid,
                         data.get('name', ''),
                         data.get('author', ''),
                         data.get('source'),
                         data.get('duration', 180000),
-                        data.get('cover_image_url', '')
+                        '',
+                        data.get('cover_image_url', ''),
+                        'bili'
                     )
     logger.debug(f'FETCHED: {str(ret)}')
     return ret
