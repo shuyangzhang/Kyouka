@@ -24,7 +24,7 @@ from app.task.interval_tasks import update_played_time_and_change_music, clear_e
 import app.CardStorage as CS
 
 
-__version__ = "0.7.0"
+__version__ = "0.7.1"
 
 # logger
 if settings.file_logger:
@@ -201,11 +201,63 @@ async def play_audio_from_bilibili_video(msg: Message, bilibili_url: str=""):
         else:
             await msg.channel.send(f"没有搜索到对应的视频, 或音源无法抽提")
 
+
 @bot.command(name="search", aliases=["搜索", "搜"])
 @log(command="search")
 @ban
 @warn
 async def search_music(msg: Message, *args):
+    keyword = " ".join(args)
+    if not keyword:
+        raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
+    else:
+        netease_candidates = await search_music_by_keyword(music_name=keyword)
+        qqmusic_candidates = await qsearch_music_by_keyword(bot, keyword)
+        migu_candidates = await msearch_music_by_keyword(keyword)
+
+        candidates = netease_candidates + migu_candidates + qqmusic_candidates
+        if candidates:
+            # put candidates into global cache first
+            author_id = msg.author.id
+            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            candidates_body = {
+                "candidates": candidates,
+                "expire": expire,
+            }
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
+
+            select_menu_msg = CardMessage(
+                *CS.searchCard(
+                    {
+                        "netease": netease_candidates,
+                        "migu": migu_candidates,
+                        "qqmusic": qqmusic_candidates
+                    }
+                )
+            )
+            from khl.requester import HTTPRequester
+            try:
+                await msg.reply(select_menu_msg)
+                # await msg.reply(str(list(select_menu_msg)))
+            except HTTPRequester.APIRequestFailed:
+                # select_menu_msg = '已搜索到以下结果\n' + \
+                #     '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                #     '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+                # await msg.reply(select_menu_msg)
+                await msg.reply(str(list(select_menu_msg)))
+            except Exception as e:
+                raise e
+
+        else:
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+
+
+@bot.command(name="wsearch", aliases=["wyy", "wyysearch", "搜索网易云", "搜网易"])
+@log(command="wsearch")
+@ban
+@warn
+async def search_netease(msg: Message, *args):
     keyword = " ".join(args)
     if not keyword:
         raise Exception("输入格式有误。\n正确格式为: /search {keyword} 或 /搜 {keyword}")
@@ -222,16 +274,93 @@ async def search_music(msg: Message, *args):
             settings.candidates_map.pop(author_id, None)
             settings.candidates_map[author_id] = candidates_body
 
-            # then generate the select menu
-            select_menu_msg = "已匹配到如下结果：\n"
-            for index, this_item in enumerate(candidates):
-                this_item_str = f"<{index + 1}> {this_item.name} - {this_item.author} \n"
-                select_menu_msg += this_item_str
-            select_menu_msg += "\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)"
+            select_menu_msg = CardMessage(*CS.searchCard({"netease": candidates}))
             await msg.reply(select_menu_msg)
 
         else:
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+
+
+@bot.command(name='osearch', aliases=['osusearch', 'searchosu', '搜索osu', '搜osu'])
+@log(command="osearch")
+@ban
+@warn
+async def search_osu(msg: Message, *args):
+    keyword = ' '.join(args)
+    if not keyword:
+        raise Exception("格式输入有误。\n正确格式为: /osearch {keyword} 或 /搜osu {keyword}")
+    else:
+        candidates = await osearch_music_by_keyword(music_name=keyword)
+        if candidates:
+            author_id = msg.author.id
+            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            candidates_body = {
+                "candidates": candidates,
+                "expire": expire
+            }
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
+
+            select_menu_msg = CardMessage(*CS.searchCard({"osu": candidates}))
+            await msg.reply(select_menu_msg)
+
+        else:
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+
+
+@bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
+@log(command="msearch")
+@ban
+@warn
+async def search_migu(msg: Message, *args):
+    keyword = ' '.join(args)
+    if not keyword:
+        raise Exception("格式输入有误。\n正确格式为: /msearch {keyword} 或 /搜咪咕 {keyword}")
+    else:
+        candidates = await msearch_music_by_keyword(music_name=keyword)
+        if candidates:
+            author_id = msg.author.id
+            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            candidates_body = {
+                "candidates": candidates,
+                "expire": expire
+            }
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
+
+            select_menu_msg = CardMessage(*CS.searchCard({"migu": candidates}))
+            await msg.reply(select_menu_msg)
+
+        else:
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
+
+
+@bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
+@log(command="qsearch")
+@ban
+@warn
+async def search_qq(msg: Message, *args):
+    keyword = ' '.join(args)
+    if not keyword:
+        raise Exception("格式输入有误。\n正确格式为: /msearch {keyword} 或 /搜咪咕 {keyword}")
+    else:
+        candidates = await qsearch_music_by_keyword(bot, keyword)
+        if candidates:
+            author_id = msg.author.id
+            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
+            candidates_body = {
+                "candidates": candidates,
+                "expire": expire
+            }
+            settings.candidates_map.pop(author_id, None)
+            settings.candidates_map[author_id] = candidates_body
+
+            select_menu_msg = CardMessage(*CS.searchCard({"qqmusic": candidates}))
+            await msg.channel.send(select_menu_msg)
+
+        else:
+            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
+
 
 @bot.command(name="select", aliases=["pick", "选择", "选"])
 @log(command="select")
@@ -258,6 +387,7 @@ async def select_candidate(msg: Message, candidate_num: str=""):
                 settings.playqueue.append(selected_music)
                 await msg.channel.send(f"已将 {selected_music.name}-{selected_music.author} 添加到播放列表")
 
+
 @bot.command(name="list", aliases=["ls", "列表", "播放列表", "队列"])
 @log(command="list")
 async def play_list(msg: Message):
@@ -280,6 +410,7 @@ async def play_list(msg: Message):
             await msg.channel.send(resp)
         except Exception as e:
             raise e
+
 
 @bot.command(name="cut", aliases=["next", "切歌", "下一首", "切"])
 @log(command="cut")
@@ -375,90 +506,6 @@ async def make_music_at_top_of_play_list(msg: Message, music_number: str=""):
                 settings.playqueue.insert(1, to_top_music)
                 await msg.channel.send(f"已将歌曲 {to_top_music.name}-{to_top_music.author} 在播放列表中置顶")
 
-
-@bot.command(name='osearch', aliases=['osusearch', 'searchosu', '搜索osu', '搜osu'])
-@log(command="osearch")
-@ban
-@warn
-async def search_osu(msg: Message, *args):
-    keyword = ' '.join(args)
-    if not keyword:
-        raise Exception("格式输入有误。\n正确格式为: /osearch {keyword} 或 /搜osu {keyword}")
-    else:
-        candidates = await osearch_music_by_keyword(music_name=keyword)
-        if candidates:
-            author_id = msg.author.id
-            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
-            candidates_body = {
-                "candidates": candidates,
-                "expire": expire
-            }
-            settings.candidates_map.pop(author_id, None)
-            settings.candidates_map[author_id] = candidates_body
-
-            select_menu_msg = '已搜索到以下结果\n' + \
-                '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
-                '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.reply(select_menu_msg)
-
-        else:
-            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
-
-@bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
-@log(command="msearch")
-@ban
-@warn
-async def search_migu(msg: Message, *args):
-    keyword = ' '.join(args)
-    if not keyword:
-        raise Exception("格式输入有误。\n正确格式为: /msearch {keyword} 或 /搜咪咕 {keyword}")
-    else:
-        candidates = await msearch_music_by_keyword(music_name=keyword)
-        if candidates:
-            author_id = msg.author.id
-            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
-            candidates_body = {
-                "candidates": candidates,
-                "expire": expire
-            }
-            settings.candidates_map.pop(author_id, None)
-            settings.candidates_map[author_id] = candidates_body
-
-            select_menu_msg = '已搜索到以下结果\n' + \
-                '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
-                '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.reply(select_menu_msg)
-
-        else:
-            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
-
-@bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
-@log(command="qsearch")
-@ban
-@warn
-async def search_qq(msg: Message, *args):
-    keyword = ' '.join(args)
-    if not keyword:
-        raise Exception("格式输入有误。\n正确格式为: /msearch {keyword} 或 /搜咪咕 {keyword}")
-    else:
-        candidates = await qsearch_music_by_keyword(bot, keyword)
-        if candidates:
-            author_id = msg.author.id
-            expire = datetime.datetime.now() + datetime.timedelta(minutes=1)
-            candidates_body = {
-                "candidates": candidates,
-                "expire": expire
-            }
-            settings.candidates_map.pop(author_id, None)
-            settings.candidates_map[author_id] = candidates_body
-
-            select_menu_msg = '已搜索到以下结果\n' + \
-                '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
-                '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-            await msg.channel.send(select_menu_msg)
-
-        else:
-            await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 @bot.command(name="pause", aliases=["暂停"])
 @log(command="pause")
