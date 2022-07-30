@@ -65,7 +65,7 @@ def NowMusicCard(music_list: list[Music]) -> Card:
     # playing music card
     first_music = music_list[0]
     text = ASSETS[first_music.website]['text']
-    url = ASSETS[first_music.website]['url']
+    url = ASSETS[first_music.website]['url'].format(first_music.music_id)
 
     if text and url:
         source_url = f'[{text}]({url})'
@@ -77,6 +77,10 @@ def NowMusicCard(music_list: list[Music]) -> Card:
 
     playing_music_card = Card(theme=Types.Theme.INFO, color=Color(hex=__MUSIC_LIST_PLAYING_MUSIC_COLOR))
     playing_music_card.append(
+        # Module.Section(
+        #     Element.Text(f":notes:  **当前歌曲**", type=Types.Text.KMD),
+        #     Element.Button('切歌', 'cut:-1:-1', theme=Types.Theme.DANGER)
+        # )
         Module.Header(f":notes:  当前歌曲")
     )
     playing_music_card.append(Module.Divider())
@@ -137,13 +141,13 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
                     f"**({index + 2})    {one_music_des.name} - {one_music_des.author}**",
                     type=Types.Text.KMD
                 ),
-                accessory=Element.Button('删除', f"remove:{index+2}", theme=Types.Theme.DANGER)
+                accessory=Element.Button('删除', f"remove:{index+2}:-1", theme=Types.Theme.DANGER)
             )
         )
         remaining_list_card.append(
             Module.Context(
                 Element.Image(image_url),
-                Element.Text(f' | 来源：{ASSETS[one_music_des.website]["icon"]} '),
+                Element.Text(f' | 来源：{ASSETS[one_music_des.website]["text"]} '),
                 Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
@@ -219,6 +223,8 @@ def HelpCard() -> Card:
 def searchCard(music_dict: dict) -> Card:
     return_card = []
     music_list: list[Music] = []
+    end_time = str(datetime.datetime.now() + datetime.timedelta(minutes=1)).replace(':', '-')
+
     for value in music_dict.values():
         music_list += value
 
@@ -229,7 +235,7 @@ def searchCard(music_dict: dict) -> Card:
             card.append(
                 Module.Section(
                     Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
-                    Element.Button('点歌', f'pick:{str(music_list.index(music))}', theme=Types.Theme.SUCCESS)
+                    Element.Button('点歌', f'pick:{str(music_list.index(music))}:{end_time}', theme=Types.Theme.SUCCESS)
                     )
                 )
             card.append(Module.Context(
@@ -246,4 +252,26 @@ def searchCard(music_dict: dict) -> Card:
         )
         return_card.append(card)
 
-    return tuple(card for card in return_card)
+    return (card for card in return_card)
+
+def pickCard(music: Music) -> Card:
+    text = ASSETS[music.website]['text']
+    url = ASSETS[music.website]['url'].format(music.music_id)
+    source_url = f'[{text}]({url})'
+
+    card = Card(Module.Header(f'已将 {music.name} 添加到播放列表'), Module.Divider())
+    card.append(
+        Module.Section(
+            Element.Text(
+                f"**{music.name}  -  {music.author}**\n{f'专辑：{music.album}' if music.album else ''}\n来源：{source_url}",
+                type=Types.Text.KMD
+            ),
+            accessory=Element.Image(
+                src = music.cover_url if music.cover_url !="" else NO_COVER_URL,
+                size= Types.Size.SM
+            ),
+            mode=Types.SectionMode.RIGHT
+        )
+    )
+
+    return card
