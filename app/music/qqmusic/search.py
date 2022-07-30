@@ -17,6 +17,8 @@ async def get_song_mid(songName: str):
     url = QQMUSIC_SEARCH_API+songName
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
+            if resp.status != 200:
+                return None
             h_dict = json.loads((await resp.text())[9:-1])
             matched = []
             song_list = h_dict.get("data", {}).get("song", {}).get("list", [])
@@ -32,7 +34,7 @@ async def get_song_mid(songName: str):
                     song_info["albummid"] = "1"+song_info.get("singer", [])[0].get("mid", "")
                 else:
                     song_info["albummid"] = "2"+song_info.get("albummid", "")
-                matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0) * 1000, song_info.get("albummid", "")))
+                matched.append((song_info.get("songmid", ""), song_info.get("songname", ""), singers, song_info.get("interval", 0) * 1000, song_info.get("albummid", ""), song_info.get("albumname", '未知专辑')))
     return matched
 
 async def handle_informations(bot: Bot, matched: list):
@@ -53,13 +55,15 @@ async def handle_informations(bot: Bot, matched: list):
                     cover_url_webp = QQMUSIC_SONG_COVER.format(**kwargs)
                     cover_url = await webp2jpeg(bot, cover_url_webp)
 
-            result.append(Music(song_info[1], song_info[2], m4aUrl, song_info[3], cover_url))
+            result.append(Music(song_info[0], song_info[1], song_info[2], m4aUrl, song_info[3], song_info[5], cover_url, 'qqmusic'))
 
     logger.debug(f"{[str(x) for x in result]}")
     return result
 
 async def qsearch_music_by_keyword(bot, songName):
     matched = await get_song_mid(songName)
+    if not matched:
+        raise Exception('qq音乐搜索失败(404)')
     return (await handle_informations(bot, matched))
 
 
