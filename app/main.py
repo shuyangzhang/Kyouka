@@ -1,5 +1,6 @@
 import re
 import datetime
+import json
 
 from loguru import logger
 from khl import Message, Bot, PublicMessage
@@ -19,7 +20,7 @@ from app.utils.channel_utils import get_joined_voice_channel_id
 from app.utils.log_utils import loguru_decorator_factory as log
 from app.utils.permission_utils import warn_decorator as warn
 from app.utils.permission_utils import ban_decorator as ban
-from app.utils.message_utils import update_cardmessage_by_bot as update_cardmessage
+from app.utils.message_utils import update_cardmessage_by_bot
 from app.task.interval_tasks import update_played_time_and_change_music, clear_expired_candidates_cache, keep_bproxy_alive, update_kanban_info, update_playing_game_status, keep_bot_market_heart_beat
 
 import app.CardStorage as CS
@@ -642,13 +643,12 @@ from khl import Event,EventTypes
 @bot.on_event(EventTypes.MESSAGE_BTN_CLICK)
 async def msg_btn_click(b:Bot,event:Event):
     channel = await b.fetch_public_channel(event.body['target_id'])
-    msg_id = event.body['msg_id']
     user_id = event.body['user_id']
     message = PublicMessage(
-        msg_id=msg_id,
+        msg_id=event.body['msg_id'],
         _gate_=gate,
         target_id=event.body['target_id'],
-        extra={'guild_id': event.body['guild_id'], 'channel_name': '', 'author': {'id': user_id}})
+        extra={'guild_id': event.body['guild_id'], 'channel_name': channel.name, 'author': {'id': user_id}})
     value = event.body['value']
 
     now_time = str(datetime.datetime.now()).replace(':', '-')
@@ -667,11 +667,11 @@ async def msg_btn_click(b:Bot,event:Event):
             except:
                 pass
         elif music_number > play_list_length or now_time > end_time:
-            await update_cardmessage(bot, msg_id, str(list(CardMessage(*CS.MusicListCard(play_list)))).replace("'", '"'))
+            await update_cardmessage(message, CardMessage(*CS.MusicListCard(play_list)))
         else:
             del settings.playqueue[music_number - 1]
             new_play_list = list(settings.playqueue)
-            await update_cardmessage(bot, msg_id, str(list(CardMessage(*CS.MusicListCard(new_play_list)))).replace("'", '"'))
+            await update_cardmessage(message, CardMessage(*CS.MusicListCard(play_list)))
 
     elif action == 'pick':
         pick_number = int(args[0])
@@ -687,20 +687,30 @@ async def msg_btn_click(b:Bot,event:Event):
             selected_music = candidates[pick_number]
             settings.candidates_map.pop(user_id, None)
             settings.playqueue.append(selected_music)
-            await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.pickCard(selected_music)))).replace("'", '"'))
+
+            await update_cardmessage(message, CardMessage(CS.pickCard(selected_music)))
+
 
     elif action == 'top':
         top_number = int(args[0])
         
         if top_number > play_list_length:
-            await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.topCard(play_list[1:])))).replace("'", '"'))
+            await update_cardmessage(message, CardMessage(CS.topCard(play_list[1:])))
         else:
             to_top_music = play_list[top_number - 1]
             del settings.playqueue[top_number - 1]
             settings.playqueue.insert(1, to_top_music)
             new_play_list = list(settings.playqueue)
-            await update_cardmessage(bot, msg_id, str(list(CardMessage(CS.topCard(new_play_list[1:])))).replace("'", '"'))
+            await update_cardmessage(message, CardMessage(CS.topCard(new_play_list[1:])))
 
+
+async def update_cardmessage(message: Message, content: CardMessage):
+    try:
+        content_str = json.dumps(content)
+        await update_cardmessage_by_bot(bot, message.id, content_str)
+    except:
+        await message.delete()
+        await message.ctx.channel.send(content)
 
     '''
     elif action == 'cut':
