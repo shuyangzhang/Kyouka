@@ -159,7 +159,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.0 20220703 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.1 20220703 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
@@ -184,6 +184,7 @@ def HelpCard() -> Card:
 :musical_note:  **音乐指令**  :musical_note:
 `/play {music_name}` - 点歌
 `/search {keyword}` - 搜索歌曲
+`/wsearch {keyword}` - 搜索网易云音乐中的歌曲
 `/msearch {keyword}` - 搜索咪咕音乐中的歌曲
 `/qsearch {keyword}` - 搜索QQ音乐中的歌曲
 `/osearch {keyword}` - 搜索osu!中的歌曲
@@ -247,7 +248,7 @@ def searchCard(music_dict: dict) -> Card:
                 card.append(Module.Divider())
             card.append(
                 Module.Context(
-                    Element.Text(f'来自*{ASSETS[key]["text"]}* ', Types.Text.KMD),
+                    Element.Text(f':mag: 来自*{ASSETS[key]["text"]}* ', Types.Text.KMD),
                     Element.Image(ASSETS[key]["icon"]),
                     Element.Text('\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)')
                 )
@@ -261,7 +262,7 @@ def pickCard(music: Music) -> Card:
     url = ASSETS[music.website]['url'].format(music.music_id)
     source_url = f'[{text}]({url})'
 
-    card = Card(Module.Header(f'已将 {music.name} 添加到播放列表'), Module.Divider())
+    card = Card(Module.Header(f':musical_note: 已将 {music.name} 添加到播放列表'), Module.Divider())
     card.append(
         Module.Section(
             Element.Text(
@@ -281,7 +282,7 @@ def pickCard(music: Music) -> Card:
 def topCard(music_list: list[Music]) -> Card:
     card = Card(theme=Types.Theme.SECONDARY)
     card.append(
-        Module.Header(f"置顶")
+        Module.Header(f":arrow_up: 置顶")
     )
     for index, one_music_des in enumerate(music_list):
         image_url = one_music_des.cover_url
