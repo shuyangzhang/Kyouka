@@ -159,7 +159,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.1 20220703 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.1 20220731 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
