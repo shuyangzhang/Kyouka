@@ -1,7 +1,6 @@
 from khl import Bot, Message
-from khl.card import CardMessage
 
-async def update_cardmessage_by_message(msg: Message, msg_id, content):
+async def update_cardmessage_by_message(msg: Message, msg_id: str, content: str):
     method = 'POST'
     route = 'message/update'
     json = {
@@ -10,7 +9,7 @@ async def update_cardmessage_by_message(msg: Message, msg_id, content):
     }
     await msg.ctx.gate.request(method=method, route=route, json=json)
 
-async def update_cardmessage_by_bot(bot: Bot, msg_id: str, content: CardMessage):
+async def update_cardmessage_by_bot(bot: Bot, msg_id: str, content: str):
     method = 'POST'
     route = 'message/update'
     json = {
