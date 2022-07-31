@@ -26,7 +26,7 @@ from app.task.interval_tasks import update_played_time_and_change_music, clear_e
 import app.CardStorage as CS
 
 
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 # logger
 if settings.file_logger:
@@ -109,7 +109,7 @@ async def play_music(msg: Message, *args):
     else:
         music = await fetch_music_source_by_name(music_name)
         if music:
-            await msg.channel.send(f'已将 {music.name}-{music.author} 添加到播放列表')
+            await msg.channel.send(CardMessage(CS.pickCard(music)))
             settings.playqueue.append(music)
         else:
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
@@ -703,15 +703,6 @@ async def msg_btn_click(b:Bot,event:Event):
             new_play_list = list(settings.playqueue)
             await update_cardmessage(message, CardMessage(CS.topCard(new_play_list[1:])))
 
-
-async def update_cardmessage(message: Message, content: CardMessage):
-    try:
-        content_str = json.dumps(content)
-        await update_cardmessage_by_bot(bot, message.id, content_str)
-    except:
-        await message.delete()
-        await message.ctx.channel.send(content)
-
     '''
     elif action == 'cut':
         if not play_list:
@@ -739,6 +730,15 @@ async def update_cardmessage(message: Message, content: CardMessage):
 
     # this function is WIP 
 ##################
+
+
+async def update_cardmessage(message: Message, content: CardMessage):
+    try:
+        content_str = json.dumps(content)
+        await update_cardmessage_by_bot(bot, message.id, content_str)
+    except:
+        await message.delete()
+        await message.ctx.channel.send(content)
 
 
 ###################
