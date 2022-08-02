@@ -125,8 +125,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
     :return:
     """
     first_music = music_list[0]
-    end_time_int = first_music.endtime
-    end_time = datetime.datetime.fromtimestamp(end_time_int / 1e3) if end_time_int != -1 else datetime.datetime.now()
+    end_time = first_music.endtime
 
     # 剩余列表
     remaining_list_card = Card(theme=Types.Theme.SECONDARY)
@@ -152,6 +151,10 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
                 Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
+        if len(remaining_list_card) >= 46:
+            remaining_list_card.append(Module.Divider())
+            remaining_list_card.append(Module.Header('・・・'))
+            break    
 
     return NowMusicCard(music_list), remaining_list_card
 
@@ -159,7 +162,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.1 20220731 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.3 20220802 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
@@ -222,6 +225,7 @@ def HelpCard() -> Card:
 
     return card
 
+
 def searchCard(music_dict: dict) -> Card:
     return_card = []
     music_list: list[Music] = []
@@ -257,6 +261,7 @@ def searchCard(music_dict: dict) -> Card:
 
     return (card for card in return_card)
 
+
 def pickCard(music: Music) -> Card:
     text = ASSETS[music.website]['text']
     url = ASSETS[music.website]['url'].format(music.music_id)
@@ -278,6 +283,7 @@ def pickCard(music: Music) -> Card:
     )
 
     return card
+
 
 def topCard(music_list: list[Music]) -> Card:
     card = Card(theme=Types.Theme.SECONDARY)

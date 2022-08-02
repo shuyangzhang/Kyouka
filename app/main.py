@@ -26,7 +26,7 @@ from app.task.interval_tasks import update_played_time_and_change_music, clear_e
 import app.CardStorage as CS
 
 
-__version__ = "0.7.2"
+__version__ = "0.7.3"
 
 # logger
 if settings.file_logger:
@@ -651,7 +651,7 @@ async def msg_btn_click(b:Bot,event:Event):
         extra={'guild_id': event.body['guild_id'], 'channel_name': channel.name, 'author': {'id': user_id}})
     value = event.body['value']
 
-    now_time = str(datetime.datetime.now()).replace(':', '-')
+    now_time = datetime.datetime.now().timestamp() * 1000
     action, *args, end_time = (value.split(":"))
 
     play_list = list(settings.playqueue)
