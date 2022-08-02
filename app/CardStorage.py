@@ -90,7 +90,7 @@ def NowMusicCard(music_list: list[Music]) -> Card:
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                src = image_url if image_url!="" else NO_COVER_URL,
+                src = image_url if image_url else NO_COVER_URL,
                 size= Types.Size.SM
             ),
             mode=Types.SectionMode.RIGHT
@@ -184,7 +184,7 @@ def HelpCard() -> Card:
 :musical_note:  **音乐指令**  :musical_note:
 `/play {music_name}` - 点歌
 `/search {keyword}` - 搜索歌曲
-`/wsearch {keyword}` - 搜索网易云音乐中的歌曲
+`/nsearch {keyword}` - 搜索网易云音乐中的歌曲
 `/msearch {keyword}` - 搜索咪咕音乐中的歌曲
 `/qsearch {keyword}` - 搜索QQ音乐中的歌曲
 `/osearch {keyword}` - 搜索osu!中的歌曲

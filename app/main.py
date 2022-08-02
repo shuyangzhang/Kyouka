@@ -266,8 +266,8 @@ async def search_music(msg: Message, *args):
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 
-@bot.command(name="wsearch", aliases=["wyy", "wyysearch", "搜索网易云", "搜网易"])
-@log(command="wsearch")
+@bot.command(name="nsearch", aliases=["wyy", "wyysearch", "搜索网易云", "搜网易"])
+@log(command="nsearch")
 @ban
 @warn
 async def search_netease(msg: Message, *args):
@@ -294,7 +294,7 @@ async def search_netease(msg: Message, *args):
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 
-@bot.command(name='osearch', aliases=['osusearch', 'searchosu', '搜索osu', '搜osu'])
+@bot.command(name='osearch', aliases=['osu', 'osusearch', 'searchosu', '搜索osu', '搜osu'])
 @log(command="osearch")
 @ban
 @warn
@@ -321,7 +321,7 @@ async def search_osu(msg: Message, *args):
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 
-@bot.command(name='msearch', aliases=['migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
+@bot.command(name='msearch', aliases=['migu', 'migusearch', 'searchmigu', '搜索咪咕', '搜咪咕', '咪咕音乐'])
 @log(command="msearch")
 @ban
 @warn
@@ -348,7 +348,7 @@ async def search_migu(msg: Message, *args):
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
 
 
-@bot.command(name='qsearch', aliases=['qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
+@bot.command(name='qsearch', aliases=['qq', 'qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
 @log(command="qsearch")
 @ban
 @warn
