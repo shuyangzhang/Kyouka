@@ -4,7 +4,7 @@ import aiohttp
 from loguru import logger
 
 from app.music.music import Music
-from app.music.netease.playlist import song_ids_to_instances
+from app.music.netease.details import song_ids_to_instances
 
 NETEASE_API = "http://cloud-music.pl-fe.cn/"
 
