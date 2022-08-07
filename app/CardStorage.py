@@ -153,7 +153,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
         )
         if len(remaining_list_card._modules) >= 46:
             remaining_list_card.append(Module.Divider())
-            remaining_list_card.append(Module.Header(f'str({len(music_list)-16}) 首音乐被折叠'))
+            remaining_list_card.append(Module.Header(f'{len(music_list)-16} 首音乐被折叠'))
             break    
 
     return NowMusicCard(music_list), remaining_list_card
@@ -229,7 +229,6 @@ def HelpCard() -> Card:
 def searchCard(music_dict: dict) -> Card:
     return_card = []
     music_list: list[Music] = []
-    end_time = str(datetime.datetime.now() + datetime.timedelta(minutes=1)).replace(':', '-')
 
     for value in music_dict.values():
         music_list += value
@@ -242,7 +241,7 @@ def searchCard(music_dict: dict) -> Card:
                 card.append(
                     Module.Section(
                         Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
-                        Element.Button('点歌', f'pick:{str(music_list.index(music))}:{end_time}', theme=Types.Theme.SUCCESS)
+                        Element.Button('点歌', f'pick:{str(music_list.index(music))}:-1', theme=Types.Theme.SUCCESS)
                         )
                     )
                 card.append(Module.Context(
