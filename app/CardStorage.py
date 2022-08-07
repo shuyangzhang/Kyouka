@@ -153,7 +153,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
         )
         if len(remaining_list_card._modules) >= 46:
             remaining_list_card.append(Module.Divider())
-            remaining_list_card.append(Module.Header(f'str({len(music_list)-16}) 首音乐被折叠'))
+            remaining_list_card.append(Module.Header(f'{len(music_list)-16} 首音乐被折叠'))
             break    
 
     return NowMusicCard(music_list), remaining_list_card
@@ -309,5 +309,9 @@ def topCard(music_list: list[Music]) -> Card:
                 Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
+        if len(card._modules) >= 46:
+            card.append(Module.Divider())
+            card.append(Module.Header(f'{len(music_list)-15} 首音乐被折叠'))
+            break
 
     return card

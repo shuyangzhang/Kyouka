@@ -666,12 +666,12 @@ async def msg_btn_click(b:Bot,event:Event):
                 await message.delete()
             except:
                 pass
-        elif music_number > play_list_length or now_time > end_time:
+        elif music_number > play_list_length or str(now_time) > end_time:
             await update_cardmessage(message, CardMessage(*CS.MusicListCard(play_list)))
         else:
             del settings.playqueue[music_number - 1]
             new_play_list = list(settings.playqueue)
-            await update_cardmessage(message, CardMessage(*CS.MusicListCard(play_list)))
+            await update_cardmessage(message, CardMessage(*CS.MusicListCard(new_play_list)))
 
     elif action == 'pick':
         pick_number = int(args[0])
