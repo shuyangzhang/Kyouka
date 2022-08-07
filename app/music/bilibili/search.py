@@ -4,6 +4,7 @@ import aiohttp
 from loguru import logger
 
 from app.music.music import Music
+from app.config.common import settings
 
 BILIBILI_VIDEO_INFO_API = "http://api.bilibili.com/x/web-interface/view"
 BILIBILI_AUDIO_SOURCE_API = "https://api.bilibili.com/x/player/playurl"
@@ -28,14 +29,16 @@ async def fetch_basic_video_info_by_BVid(BVid: str):
                     cid = data.get("cid", 0)
                     duration = data.get("duration", 180)  # seconds
                     duration *= 1000
+                    cover_image_url = data.get("pic", "")
                 else:
                     matched = False
                     name = ""
                     author = ""
                     cid = 0
                     duration = 0
-    logger.debug(f"{[matched, name, author, cid, duration]}")
-    return matched, name, author, cid, duration
+                    cover_image_url = ""
+    logger.debug(f"{[matched, name, author, cid, duration, cover_image_url]}")
+    return matched, name, author, cid, duration, cover_image_url
 
 async def fetch_audio_source_by_BVid_and_cid(BVid: str, cid: int):
     url = f"{BILIBILI_AUDIO_SOURCE_API}?bvid={BVid}&cid={cid}&qn=16&fnval=80"
@@ -64,7 +67,7 @@ async def fetch_audio_source_by_BVid_and_cid(BVid: str, cid: int):
 
 async def bvid_to_music(BVid: str) -> Optional[Music]:
     ret = None
-    matched, name, author, cid, duration = await fetch_basic_video_info_by_BVid(BVid=BVid)
+    matched, name, author, cid, duration, cover_image_url = await fetch_basic_video_info_by_BVid(BVid=BVid)
     if matched:
         matched, source = await fetch_audio_source_by_BVid_and_cid(BVid=BVid, cid=cid)
         ret = Music(BVid, name, author, source, duration, '', '', 'bili')
@@ -96,6 +99,12 @@ async def bvid_to_music_by_bproxy(BVid: str) -> Optional[Music]:
                         'bili'
                     )
     logger.debug(f'FETCHED: {str(ret)}')
+    return ret
+
+async def bvid_to_music_by_local_bproxy(BVid: str) -> Optional[Music]:
+    ret = await bvid_to_music(BVid=BVid)
+    ret.source = f"{settings.local_bproxy_url}/{BVid}"
+    logger.debug(f"FETCHED: {str(ret)}")
     return ret
 
 if __name__ == "__main__":

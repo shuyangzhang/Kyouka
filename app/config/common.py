@@ -22,6 +22,9 @@ class CommonSettings(BaseSettings):
     kanban: bool = False
     kanban_channel: str = ""
 
+    local_bproxy: bool = False
+    local_bproxy_url: str = ""
+
     bot_market_heart_beat: bool = False
     bot_market_uuid: str = ""
 
