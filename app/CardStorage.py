@@ -1,6 +1,5 @@
 import datetime
 
-from typing import Dict
 from khl.card import Card
 from khl.card.module import Module
 from khl.card.interface import Types, _Module
@@ -18,36 +17,81 @@ __MUSIC_LIST_TILE_COLOR = "#9b59b6"
 __MUSIC_LIST_PLAYING_MUSIC_COLOR = "#a29bfe"
 
 
-class InviteModule(_Module):
-    _tyep = "invite"
+NO_COVER_URL = 'https://img.kookapp.cn/assets/2022-07/2rM6IYtAu53uw3uw.png'
 
-    def __init__ (self):
-        super().__init__(Types.Theme.NA, Types.Size.NA)
-
-    @property
-    def _repr(self) -> Dict:
-        return {
-            "type": "invite",
-            "code": "https://kaihei.co/oHRMIL"
-        }
+ASSETS = {
+    'netease_radio': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png',
+        'text': '网易云音乐',
+        'url': '',
+        'color': ''
+    },
+    'netease': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/RxgxZS3tIK00w00w.png',
+        'text': '网易云音乐',
+        'url': 'https://music.163.com/#/song?id={}',
+        'color': 'dd001a'
+    },
+    'qqmusic': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/VLtsP2quEZ00w00w.png',
+        'text': 'QQ音乐',
+        'url': 'https://y.qq.com/n/ryqq/songDetail/{}',
+        'color': 'ffdc01'
+    },
+    'migu': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/2VklLsY5XP01s01s.png',
+        'text': '咪咕音乐',
+        'url': 'https://music.migu.cn/v3/music/song/{}',
+        'color': '#ed3c65'
+    },
+    'bili': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/SZQ8mFm2Q700w00w.png',
+        'text': '哔哩哔哩',
+        'url': 'https://www.bilibili.com/video/{}',
+        'color': ''
+    },
+    'osu': {
+        'icon': 'https://img.kookapp.cn/assets/2022-07/vSPG7hAPrZ00w00w.png',
+        'text': 'osu!',
+        'url': 'https://osu.ppy.sh/beatmapsets/{}',
+        'color': '#e3609a'
+    }
+}
 
 
 def NowMusicCard(music_list: list[Music]) -> Card:
     # playing music card
     first_music = music_list[0]
+    text = ASSETS[first_music.website]['text']
+    url = ASSETS[first_music.website]['url'].format(first_music.music_id)
+
+    if text and url:
+        source_url = f'[{text}]({url})'
+    elif text and not url:
+        # netease radio
+        source_url = text
+    else:
+        source_url = ''
+
     playing_music_card = Card(theme=Types.Theme.INFO, color=Color(hex=__MUSIC_LIST_PLAYING_MUSIC_COLOR))
     playing_music_card.append(
+        # Module.Section(
+        #     Element.Text(f":notes:  **当前歌曲**", type=Types.Text.KMD),
+        #     Element.Button('切歌', 'cut:-1:-1', theme=Types.Theme.DANGER)
+        # )
         Module.Header(f":notes:  当前歌曲")
     )
+    playing_music_card.append(Module.Divider())
     image_url = first_music.cover_url
     playing_music_card.append(
         Module.Section(
             Element.Text(
-                f"**  {first_music.name}  -  {first_music.author}**",
+                f"**{first_music.name}  -  {first_music.author}**\n{f'专辑：{first_music.album}' if first_music.album else ''}\n来源：{source_url}",
                 type=Types.Text.KMD
             ),
             accessory=Element.Image(
-                src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
+                src = image_url if image_url else NO_COVER_URL,
+                size= Types.Size.SM
             ),
             mode=Types.SectionMode.RIGHT
         )
@@ -66,19 +110,6 @@ def NowMusicCard(music_list: list[Music]) -> Card:
         )
     )
 
-    # cut button
-    """
-    playing_music_card.append(
-        Module.ActionGroup(
-            Element.Button(
-                text = "               切歌               ",
-                value='cut:',
-                theme=Types.Theme.PRIMARY
-            )
-        )
-    )
-    """
-
     return playing_music_card
 
 
@@ -93,6 +124,8 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 ]
     :return:
     """
+    first_music = music_list[0]
+    end_time = first_music.endtime
 
     # 剩余列表
     remaining_list_card = Card(theme=Types.Theme.SECONDARY)
@@ -101,35 +134,27 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
     )
     for index,one_music_des in enumerate( music_list[1:]):
         image_url = one_music_des.cover_url
+        remaining_list_card.append(Module.Divider())
         remaining_list_card.append(
             Module.Section(
                 Element.Text(
-                    f"**    ({index + 2})    {one_music_des.name} - {one_music_des.author}**",
+                    f"**({index + 2})    {one_music_des.name} - {one_music_des.author}**",
                     type=Types.Text.KMD
                 ),
-                accessory=Element.Image(
-                    src = image_url if image_url!="" else "http://p2.music.126.net/e5cvcdgeosDKTDrkTfZXnQ==/109951166155165682.jpg"
-                ),
-                mode=Types.SectionMode.LEFT
+                accessory=Element.Button('删除', f"remove:{index+2}:{end_time}", theme=Types.Theme.DANGER)
             )
         )
-        """
         remaining_list_card.append(
-            Module.ActionGroup(
-                Element.Button(
-                    text = "置顶",
-                    value= f"top:{index+2}",
-                    theme=Types.Theme.PRIMARY
-                ),
-                Element.Button(
-                    text = "删除",
-                    value= f"remove:{index+2}",
-                    theme=Types.Theme.DANGER
-                )
+            Module.Context(
+                Element.Image(image_url),
+                Element.Text(f' | 来源：{ASSETS[one_music_des.website]["text"]} '),
+                Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
-        """
-        remaining_list_card.append(Module.Divider())
+        if len(remaining_list_card._modules) >= 46:
+            remaining_list_card.append(Module.Divider())
+            remaining_list_card.append(Module.Header(f'str({len(music_list)-16}) 首音乐被折叠'))
+            break    
 
     return NowMusicCard(music_list), remaining_list_card
 
@@ -137,7 +162,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.0 20220703 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.3 20220802 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
@@ -162,6 +187,7 @@ def HelpCard() -> Card:
 :musical_note:  **音乐指令**  :musical_note:
 `/play {music_name}` - 点歌
 `/search {keyword}` - 搜索歌曲
+`/nsearch {keyword}` - 搜索网易云音乐中的歌曲
 `/msearch {keyword}` - 搜索咪咕音乐中的歌曲
 `/qsearch {keyword}` - 搜索QQ音乐中的歌曲
 `/osearch {keyword}` - 搜索osu!中的歌曲
@@ -181,7 +207,8 @@ def HelpCard() -> Card:
     )
 
     card.append(
-        InviteModule()
+        # InviteModule()
+        Module.Invite('oHRMIL')
     )
 
     card.append(
@@ -195,5 +222,92 @@ def HelpCard() -> Card:
             )
         )
     )
+
+    return card
+
+
+def searchCard(music_dict: dict) -> Card:
+    return_card = []
+    music_list: list[Music] = []
+    end_time = str(datetime.datetime.now() + datetime.timedelta(minutes=1)).replace(':', '-')
+
+    for value in music_dict.values():
+        music_list += value
+
+    for key in music_dict.keys():
+        card = Card(color=Color(hex=ASSETS[key]['color']))
+        search_list: list[Music] = music_dict[key]
+        if search_list:
+            for music in search_list:
+                card.append(
+                    Module.Section(
+                        Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
+                        Element.Button('点歌', f'pick:{str(music_list.index(music))}:{end_time}', theme=Types.Theme.SUCCESS)
+                        )
+                    )
+                card.append(Module.Context(
+                    Element.Image(music.cover_url),
+                    Element.Text(f' {music.album}')
+                ))
+                card.append(Module.Divider())
+            card.append(
+                Module.Context(
+                    Element.Text(f':mag: 来自*{ASSETS[key]["text"]}* ', Types.Text.KMD),
+                    Element.Image(ASSETS[key]["icon"]),
+                    Element.Text('\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)')
+                )
+            )
+            return_card.append(card)
+
+    return (card for card in return_card)
+
+
+def pickCard(music: Music) -> Card:
+    text = ASSETS[music.website]['text']
+    url = ASSETS[music.website]['url'].format(music.music_id)
+    source_url = f'[{text}]({url})'
+
+    card = Card(Module.Header(f':musical_note: 已将 {music.name} 添加到播放列表'), Module.Divider())
+    card.append(
+        Module.Section(
+            Element.Text(
+                f"**{music.name}  -  {music.author}**\n{f'专辑：{music.album}' if music.album else ''}\n来源：{source_url}",
+                type=Types.Text.KMD
+            ),
+            accessory=Element.Image(
+                src = music.cover_url if music.cover_url !="" else NO_COVER_URL,
+                size= Types.Size.SM
+            ),
+            mode=Types.SectionMode.RIGHT
+        )
+    )
+
+    return card
+
+
+def topCard(music_list: list[Music]) -> Card:
+    card = Card(theme=Types.Theme.SECONDARY)
+    card.append(
+        Module.Header(f":arrow_up: 置顶")
+    )
+    for index, one_music_des in enumerate(music_list):
+        image_url = one_music_des.cover_url
+        card.append(Module.Divider())
+        card.append(
+            Module.Section(
+                Element.Text(
+                    f"**({index + 2})    {one_music_des.name} - {one_music_des.author}**",
+                    type=Types.Text.KMD
+                ),
+                accessory=Element.Button('置顶', f"top:{index+2}:-1", theme=Types.Theme.INFO)
+            )
+        )
+        card.append(
+            Module.Context(
+                Element.Image(image_url),
+                Element.Text(f' | 来源：{ASSETS[one_music_des.website]["text"]} '),
+                Element.Image(ASSETS[one_music_des.website]['icon'])
+            )
+        )
 
     return card

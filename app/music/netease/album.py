@@ -21,7 +21,6 @@ async def fetch_music_ids_by_album_id(album_id: str) -> list[str]:
                 raise Exception(f'无法查询到专辑: {album_id} 中的歌曲, 请检查你的输入')
             else:
                 return matches
-    return []
 
 
 async def fetch_album_by_id(album_id: str) -> list[Music]:
