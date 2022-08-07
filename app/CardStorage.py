@@ -308,5 +308,9 @@ def topCard(music_list: list[Music]) -> Card:
                 Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
+        if len(card._modules) >= 46:
+            card.append(Module.Divider())
+            card.append(Module.Header(f"{len(music_list) - 15} 首音乐被折叠"))
+            break
 
     return card
