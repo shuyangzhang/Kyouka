@@ -16,6 +16,7 @@ QQMUSIC_SONG_BASICURL = "http://dl.stream.qqmusic.qq.com/"
 QQMUSIC_SONG_COVER = "http://y.qq.com/music/photo_new/T00{singerOrMusic}R300x300M000{id}.jpg"
 
 async def get_song_mid(songName: str):
+    # 构造查询请求
     query_data = {
         "music.search.SearchCgiService": {
             "method": "DoSearchForQQMusicDesktop",
@@ -28,11 +29,11 @@ async def get_song_mid(songName: str):
             }
         }
     }
+    # 关键字查询歌曲
     async with aiohttp.ClientSession() as session:
         async with session.post(QQMUSIC_CLIENT_SEARCH_API, data=json.dumps(query_data, ensure_ascii=False)) as resp:
-            h_dict = json.loads((await resp.text())).get("music.search.SearchCgiService")
+            song_list = json.loads((await resp.text())).get("music.search.SearchCgiService").get("data", {}).get("body", {}).get("song", {}).get("list", [])
             matched = []
-            song_list = h_dict.get("data", {}).get("body", {}).get("song", {}).get("list", [])
             for song_info in song_list:
                 if(song_info.get("action", {}).get("alert", 0) == 0):
                     continue
@@ -41,17 +42,27 @@ async def get_song_mid(songName: str):
                 for singer in singer_list:
                     singers += singer.get("name", "") + "&"
                 singers = singers[:-1]
+                # 处理封面ID
                 if(song_info.get("album", {}).get("mid","") == ""):
                     song_info["albummid"] = "1"+song_info.get("singer", [])[0].get("mid", "")
                 else:
                     song_info["albummid"] = "2"+song_info.get("album", {}).get("mid","")
-                matched.append((song_info.get("mid", ""), song_info.get("name", ""), singers, song_info.get("interval", 0) * 1000, song_info.get("albummid", "")))
+                matched.append(
+                    {
+                        "song_id": song_info.get("mid", ""),
+                        "song_name": song_info.get("name", ""),
+                        "singers": singers,
+                        "song_interval": song_info.get("interval", 0) * 1000,
+                        "album_id": song_info.get("albummid", ""),
+                        "album_name": song_info.get("album", {}).get("name", "未知专辑")
+                    }
+                )
     return matched
 
 async def handle_informations(bot: Bot, matched: list):
     result = []
     for song_info in matched:
-        songmid = song_info[0]
+        # 歌曲链接查询请求构造
         get_song_data = {
             "vkey.GetVkeyServer": {
             "method": "CgiGetVkey",
@@ -59,17 +70,19 @@ async def handle_informations(bot: Bot, matched: list):
             "param": {
                     "guid": "0",
                     "songmid": [
-                        songmid
+                        song_info["song_id"]
                     ],
                     "uin": "0"
                 }
             }
         }
+        # 获取歌曲链接
         async with aiohttp.ClientSession() as session:
             async with session.post(QQMUSIC_CLIENT_SONG_API, data=json.dumps(get_song_data, ensure_ascii=False)) as response:
                 m4aUrl = QQMUSIC_SONG_BASICURL+((await response.json(content_type="text/plain")).get("vkey.GetVkeyServer", {}).get("data", {}).get("midurlinfo", [])[0].get("purl", ""))
 
-            kwargs = {"singerOrMusic": song_info[4][0], "id": song_info[4][1:]}
+            # 封面链接生成
+            kwargs = {"singerOrMusic": song_info["album_id"][0], "id": song_info["album_id"][1:]}
             async with session.get(QQMUSIC_SONG_COVER.format(**kwargs)) as response:
                 if(response.status == 404):
                     cover_url = "http://y.qq.com/mediastyle/global/img/album_300.png"
@@ -77,7 +90,7 @@ async def handle_informations(bot: Bot, matched: list):
                     cover_url_webp = QQMUSIC_SONG_COVER.format(**kwargs)
                     cover_url = await webp2jpeg(bot, cover_url_webp)
 
-            result.append(Music(song_info[1], song_info[2], m4aUrl, song_info[3], cover_url))
+            result.append(Music(song_info["song_id"], song_info["song_name"], song_info["singers"], m4aUrl, song_info["song_interval"], song_info["album_name"], cover_url, "qqmusic"))
 
     # logger.debug(f"{[str(x) for x in result]}")
     return result
@@ -85,9 +98,3 @@ async def handle_informations(bot: Bot, matched: list):
 async def qsearch_music_by_keyword(bot, songName):
     matched = await get_song_mid(songName)
     return (await handle_informations(bot, matched))
-
-
-if __name__ == '__main__':
-    import asyncio
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete((qsearch_music_by_keyword("Igallta")))
