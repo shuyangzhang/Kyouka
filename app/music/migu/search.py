@@ -33,10 +33,13 @@ async def msearch_music_by_keyword(music_name: str, limit: int=5) -> list[Music]
                 
                 musiclist = resp_json.get('musics', [])
 
-                while musiclist and len(candidates) <= limit:
+                while musiclist and len(candidates) < limit:
                     music: dict = musiclist.pop(0)
+                    music_id = music.get('copyrightId')
                     name = music.get('songName', '未知')
                     artist = music.get('artist', '未知歌手')
+                    album = music.get('albumName', '未知专辑')
+                    if not album: album = '未知专辑'
                     cover_image_url = music.get('cover', '')
                     if music['mp3']:
                         source = music.get('mp3', '')
@@ -45,7 +48,7 @@ async def msearch_music_by_keyword(music_name: str, limit: int=5) -> list[Music]
                             audio = MP3(io.BytesIO(stream))
                             duration = round(audio.info.length * 1000)
 
-                            candidates.append(Music(name, artist, source, duration, cover_image_url))
+                            candidates.append(Music(music_id, name, artist, source, duration, album, cover_image_url, 'migu'))
             
     return candidates
 
