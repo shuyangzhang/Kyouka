@@ -199,7 +199,8 @@ python startup.py
 - `/comehere`: 绑定你所在的语音频道
 - `/channel {channel_id}`: 通过语音频道的ID进行绑定
 - `/play {music_name}`: 点歌
-- `/search {keyword}`: 搜索网易云音乐中的歌曲
+- `/search {keyword}`: 搜索歌曲
+- `/nsearch {keyword}`: 搜索网易云音乐中的歌曲
 - `/msearch {keyword}`: 搜索咪咕音乐中的歌曲
 - `/qsearch {keyword}`: 搜索QQ音乐中的歌曲
 - `/osearch {keyword}`: 搜索osu!中的歌曲
