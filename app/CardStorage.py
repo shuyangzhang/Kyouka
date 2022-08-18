@@ -162,7 +162,7 @@ def MusicListCard(music_list: list[Music]) -> Tuple[Card, Card]:
 def HelpCard() -> Card:
     card = Card(theme=Types.Theme.INFO, size=Types.Size.LG)
     # title
-    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.7.3 20220802 :watermelon:"))
+    card.append(Module.Header(":watermelon:  镜华Kyouka 操作指南 v0.8.0 20220807 :watermelon:"))
     card.append(Module.Section(Element.Text(":bangbang: 播放歌曲前务必先绑定语音频道哦！")))
 
     # base command
@@ -229,7 +229,6 @@ def HelpCard() -> Card:
 def searchCard(music_dict: dict) -> Card:
     return_card = []
     music_list: list[Music] = []
-    end_time = str(datetime.datetime.now() + datetime.timedelta(minutes=1)).replace(':', '-')
 
     for value in music_dict.values():
         music_list += value
@@ -242,7 +241,7 @@ def searchCard(music_dict: dict) -> Card:
                 card.append(
                     Module.Section(
                         Element.Text(f'** ({music_list.index(music) + 1}) {music.name} - {music.author}**', type=Types.Text.KMD),
-                        Element.Button('点歌', f'pick:{str(music_list.index(music))}:{end_time}', theme=Types.Theme.SUCCESS)
+                        Element.Button('点歌', f'pick:{str(music_list.index(music))}:-1', theme=Types.Theme.SUCCESS)
                         )
                     )
                 card.append(Module.Context(
@@ -309,9 +308,5 @@ def topCard(music_list: list[Music]) -> Card:
                 Element.Image(ASSETS[one_music_des.website]['icon'])
             )
         )
-        if len(card._modules) >= 46:
-            card.append(Module.Divider())
-            card.append(Module.Header(f'{len(music_list)-15} 首音乐被折叠'))
-            break
 
     return card
