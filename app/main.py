@@ -5,6 +5,7 @@ import json
 from loguru import logger
 from khl import Message, Bot, PublicMessage
 from khl.card import CardMessage
+from khl.requester import HTTPRequester
 from app.bot import bot
 from app.config.common import settings
 from app.music.netease.album import fetch_album_by_id
@@ -252,16 +253,13 @@ async def search_music(msg: Message, *args):
                     }
                 )
             )
-            from khl.requester import HTTPRequester
             try:
                 await msg.reply(select_menu_msg)
-                # await msg.reply(str(list(select_menu_msg)))
             except HTTPRequester.APIRequestFailed:
-                # select_menu_msg = '已搜索到以下结果\n' + \
-                #     '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
-                #     '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
-                # await msg.reply(select_menu_msg)
-                await msg.reply(str(list(select_menu_msg)))
+                select_menu_msg = '已搜索到以下结果\n' + \
+                    '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                    '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+                await msg.reply(select_menu_msg)
             except Exception as e:
                 raise e
 
@@ -291,7 +289,15 @@ async def search_netease(msg: Message, *args):
             settings.candidates_map[author_id] = candidates_body
 
             select_menu_msg = CardMessage(*CS.searchCard({"netease": candidates}))
-            await msg.reply(select_menu_msg)
+            try:
+                await msg.reply(select_menu_msg)
+            except HTTPRequester.APIRequestFailed:
+                select_menu_msg = '已搜索到以下结果\n' + \
+                    '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                    '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+                await msg.reply(select_menu_msg)
+            except Exception as e:
+                raise e
 
         else:
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
@@ -318,7 +324,15 @@ async def search_osu(msg: Message, *args):
             settings.candidates_map[author_id] = candidates_body
 
             select_menu_msg = CardMessage(*CS.searchCard({"osu": candidates}))
-            await msg.reply(select_menu_msg)
+            try:
+                await msg.reply(select_menu_msg)
+            except HTTPRequester.APIRequestFailed:
+                select_menu_msg = '已搜索到以下结果\n' + \
+                    '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                    '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+                await msg.reply(select_menu_msg)
+            except Exception as e:
+                raise e
 
         else:
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
@@ -345,7 +359,15 @@ async def search_migu(msg: Message, *args):
             settings.candidates_map[author_id] = candidates_body
 
             select_menu_msg = CardMessage(*CS.searchCard({"migu": candidates}))
-            await msg.reply(select_menu_msg)
+            try:
+                await msg.reply(select_menu_msg)
+            except HTTPRequester.APIRequestFailed:
+                select_menu_msg = '已搜索到以下结果\n' + \
+                    '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                    '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+                await msg.reply(select_menu_msg)
+            except Exception as e:
+                raise e
 
         else:
             await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
@@ -372,7 +394,15 @@ async def search_qq(msg: Message, *args):
             settings.candidates_map[author_id] = candidates_body
 
             select_menu_msg = CardMessage(*CS.searchCard({"qqmusic": candidates}))
-            await msg.channel.send(select_menu_msg)
+            try:
+                await msg.reply(select_menu_msg)
+            except HTTPRequester.APIRequestFailed:
+                select_menu_msg = '已搜索到以下结果\n' + \
+                    '\n'.join(f"<{i + 1}> {candidate.name} - {candidate.author}" for i, candidate in enumerate(candidates)) + \
+                    '\n输入 /select {编号} 或 /选 {编号} 即可加入歌单(一分钟内操作有效)'
+                await msg.reply(select_menu_msg)
+            except Exception as e:
+                raise e
 
         else:
             await msg.channel.send(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
