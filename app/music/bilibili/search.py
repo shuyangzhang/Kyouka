@@ -13,7 +13,7 @@ BILIBIlI_VIDEO_SEARCH_API = "https://api.bilibili.com/x/web-interface/search/typ
 BPROXY_API = "https://bproxy.shuyangzhang.repl.co/"
 
 BOT_HEADERS = {
-    "User-Agent": "Kyouka Music Player/1.0.0(triint@qq.com)"
+    "User-Agent": "Kyouka Music Player/1.0.0"
 }
 
 async def fetch_basic_video_info_by_BVid(BVid: str):
