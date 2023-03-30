@@ -57,7 +57,7 @@ Kyouka is a simple and powerful music bot for [KOOK](https://www.kookapp.cn/), i
 
 1. 如果你还没有安装docker, 请根据你的操作系统参照以下指引进行安装
 
-- [如何在Windows上安装Docker Destktop](https://docs.docker.com/desktop/windows/install/)
+- [如何在Windows上安装Docker Desktop](https://docs.docker.com/desktop/windows/install/)
 - [如何在MacOS上安装Docker Desktop](https://docs.docker.com/desktop/mac/install/)
 - [如何在Linux上安装Docker Desktop](https://docs.docker.com/desktop/linux/install/)
 
