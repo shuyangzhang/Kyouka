@@ -8,9 +8,13 @@ from app.config.common import settings
 
 BILIBILI_VIDEO_INFO_API = "http://api.bilibili.com/x/web-interface/view"
 BILIBILI_AUDIO_SOURCE_API = "https://api.bilibili.com/x/player/playurl"
+BILIBIlI_VIDEO_SEARCH_API = "https://api.bilibili.com/x/web-interface/search/type?keyword={KWD}&search_type=video&page_size={SEARCH_NUM}"
 
 BPROXY_API = "https://bproxy.shuyangzhang.repl.co/"
 
+BOT_HEADERS = {
+    "User-Agent": "Kyouka Music Player/1.0.0"
+}
 
 async def fetch_basic_video_info_by_BVid(BVid: str):
     url = f"{BILIBILI_VIDEO_INFO_API}?bvid={BVid}"
@@ -100,6 +104,24 @@ async def bvid_to_music_by_bproxy(BVid: str) -> Optional[Music]:
                     )
     logger.debug(f'FETCHED: {str(ret)}')
     return ret
+
+async def search_bvideo_by_title(Keyword: str, Video_num: int = 5):
+    url = BILIBIlI_VIDEO_SEARCH_API.format(KWD=Keyword, VIDEO_NUM=Video_num+1)
+    res = []
+    async with aiohttp.ClientSession(headers=BOT_HEADERS) as session:
+        async with session.get(url) as r:
+            resp_json = await r.json()
+            status = resp_json.get("code", 1)
+            if status != 0:
+                raise Exception(resp_json.get("message", "search video info failed, unknown reason.")+" with code: "+str(status))
+            else:
+                data = resp_json.get("data", {}).get("result", [])
+                for da in data:
+                    if(da.get("bvid", None) != None):  res.append(da.get("bvid", None))
+    if(res == []):
+        logger.debug("find no video with title: {title}".format(title=Keyword))
+        raise Exception("didn't find any video with title: {title}".formaat(title=Keyword))
+    return res
 
 async def bvid_to_music_by_local_bproxy(BVid: str) -> Optional[Music]:
     ret = await bvid_to_music(BVid=BVid)
