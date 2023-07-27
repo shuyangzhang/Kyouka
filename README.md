@@ -200,6 +200,7 @@ send a `/help` command in you channel, Kyouka will teach you how to use.
 - `/comehere`: bind the voice channel you are in.
 - `/channel {channel_id}`: bind the voice channel with id.
 - `/play {music_name}`: add a music to play list.
+- `/nid {id}`: play the music which matches the provided ID from netease cloud music.
 - `/search {keyword}`: search music by keyword from netease cloud music.
 - `/msearch {keyword}`: search music by keyword from migu music.
 - `/qsearch {keyword}`: search music by keyword from qq muisc.

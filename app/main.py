@@ -8,6 +8,7 @@ from khl.card import CardMessage
 from app.bot import bot
 from app.config.common import settings
 from app.music.netease.album import fetch_album_by_id
+from app.music.netease.details import song_ids_to_instances
 from app.music.netease.search import fetch_music_source_by_name, search_music_by_keyword
 from app.music.netease.playlist import fetch_music_list_by_id
 from app.music.netease.radio import fetch_radio_by_id
@@ -113,6 +114,19 @@ async def play_music(msg: Message, *args):
             settings.playqueue.append(music)
         else:
             await msg.channel.send(f"没有搜索到歌曲: {music_name} 哦，试试搜索其他歌曲吧")
+
+
+@bot.command(name="nid")
+@log(command="nid")
+@ban
+@warn
+async def play_music_using_netease_id(msg: Message, id: int):
+    music = await song_ids_to_instances(id)
+    if music:
+        await msg.channel.send(CardMessage(CS.pickCard(music)))
+        settings.playqueue.append(music)
+    else:
+        await msg.channel.send(f"没有找到 ID 为 {id} 的歌曲哦")
 
 
 @bot.command(name='playlist', aliases=["歌单", "导入歌单"])
@@ -348,7 +362,7 @@ async def search_migu(msg: Message, *args):
             await msg.reply(select_menu_msg)
 
         else:
-            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧") 
+            await msg.reply(f"没有任何与关键词: {keyword} 匹配的信息, 试试搜索其他关键字吧")
 
 
 @bot.command(name='qsearch', aliases=['qq', 'qqsearch', 'searchqq', '搜索QQ', '搜QQ', 'QQ音乐'])
@@ -697,7 +711,7 @@ async def msg_btn_click(b:Bot,event:Event):
 
     elif action == 'top':
         top_number = int(args[0])
-        
+
         if top_number > play_list_length:
             await update_cardmessage(message, CardMessage(CS.topCard(play_list[1:])))
         else:
