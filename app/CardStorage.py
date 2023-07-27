@@ -186,6 +186,7 @@ def HelpCard() -> Card:
 """
 :musical_note:  **音乐指令**  :musical_note:
 `/play {music_name}` - 点歌
+`/nid {id}`: 播放网易云上与指定 ID 对应的歌曲
 `/search {keyword}` - 搜索歌曲
 `/nsearch {keyword}` - 搜索网易云音乐中的歌曲
 `/msearch {keyword}` - 搜索咪咕音乐中的歌曲
